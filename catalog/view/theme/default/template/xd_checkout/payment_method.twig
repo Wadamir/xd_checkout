@@ -91,7 +91,7 @@
     $('#payment-method input[name="payment_method"], #payment-method select[name="payment_method"]').on('change', function () {
         {% if not logged %}
             $.ajax({
-                url: 'index.php?route=checkout/xd_checkout/payment_method/set',
+                url: 'index.php?route=xd_checkout/payment_method/set',
                 type: 'post',
                 data: $('#payment-address input[type="text"], #payment-address input[type="checkbox"]:checked, #payment-address input[type="radio"]:checked, #payment-address input[type="hidden"], #payment-address select, #payment-method input[type="text"], #payment-method input[type="checkbox"]:checked, #payment-method input[type="radio"]:checked, #payment-method input[type="hidden"], #payment-method select, #payment-method textarea'),
                 dataType: 'html',
@@ -110,10 +110,10 @@
             });
         {% else %}
             if ($('#payment-address input[name="payment_address"]:checked').val() == 'new') {
-                var url = 'index.php?route=checkout/xd_checkout/payment_method/set';
+                var url = 'index.php?route=xd_checkout/payment_method/set';
                 var post_data = $('#payment-address input[type="text"], #payment-address input[type="checkbox"]:checked, #payment-address input[type="radio"]:checked, #payment-address input[type="hidden"], #payment-address select, #payment-method input[type="text"], #payment-method input[type="checkbox"]:checked, #payment-method input[type="radio"]:checked, #payment-method input[type="hidden"], #payment-method select, #payment-method textarea');
             } else {
-                var url = 'index.php?route=checkout/xd_checkout/payment_method/set&address_id=' + $('#payment-address select[name="address_id"]').val();
+                var url = 'index.php?route=xd_checkout/payment_method/set&address_id=' + $('#payment-address select[name="address_id"]').val();
                 var post_data = $('#payment-method input[type="text"], #payment-method input[type="checkbox"]:checked, #payment-method input[type="radio"]:checked, #payment-method input[type="hidden"], #payment-method select, #payment-method textarea');
             }
 

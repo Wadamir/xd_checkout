@@ -250,7 +250,7 @@ $('#shipping-address button[id^=\'button-shipping-custom-field\']').on('click', 
 
 $('#shipping-address select[name=\'country_id\']').on('change', function() {
 	$.ajax({
-		url: 'index.php?route=checkout/xd_checkout/checkout/country&country_id=' + this.value,
+		url: 'index.php?route=xd_checkout/checkout/country&country_id=' + this.value,
 		dataType: 'json',
 		cache: false,
 		beforeSend: function() {

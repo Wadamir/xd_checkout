@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutPaymentMethod extends Controller
+class ControllerXdCheckoutPaymentMethod extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -15,7 +15,7 @@ class ControllerCheckoutXdCheckoutPaymentMethod extends Controller
     public function index()
     {
         $data = $this->load->language('checkout/checkout');
-        $data = array_merge($data, $this->load->language('checkout/xd_checkout/checkout'));
+        $data = array_merge($data, $this->load->language('xd_checkout/checkout'));
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
@@ -232,7 +232,7 @@ class ControllerCheckoutXdCheckoutPaymentMethod extends Controller
         // $data['language_id'] = $xd_checkout_settings['language_id'];
         $data['language_id'] = (int)$this->config->get('config_language_id');
 
-        $this->response->setOutput($this->load->view('checkout/xd_checkout/payment_method', $data));
+        $this->response->setOutput($this->load->view('xd_checkout/payment_method', $data));
     }
 
     public function set()
@@ -314,7 +314,7 @@ class ControllerCheckoutXdCheckoutPaymentMethod extends Controller
     public function validate()
     {
         $this->load->language('checkout/checkout');
-        $this->load->language('checkout/xd_checkout/checkout');
+        $this->load->language('xd_checkout/checkout');
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
@@ -333,7 +333,7 @@ class ControllerCheckoutXdCheckoutPaymentMethod extends Controller
 
         // Validate if payment address has been set.
         if (empty($payment_address)) {
-            $json['redirect'] = $this->url->link('checkout/xd_checkout/checkout', '', true);
+            $json['redirect'] = $this->url->link('xd_checkout/checkout', '', true);
         }
 
         if (!empty($payment_address)) {

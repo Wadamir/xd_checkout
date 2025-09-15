@@ -1,6 +1,6 @@
 <?php
 // require_once(DIR_SYSTEM . 'library/equotix/xd_checkout/equotix.php');
-class ControllerCheckoutXdCheckoutCheckout extends Controller
+class ControllerXdCheckoutCheckout extends Controller
 {
     protected $code = 'xd_checkout';
 
@@ -17,16 +17,16 @@ class ControllerCheckoutXdCheckoutCheckout extends Controller
 
     public function index()
     {
-        $this->document->addScript('catalog/view/javascript/jquery/xd_checkout/xd_checkout.js');
+        $this->document->addScript('catalog/view/javascript/jquery/xd_xd_checkout.js');
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
         if ($xd_checkout_settings['load_screen']) {
-            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout/xd_checkout.block.js');
+            $this->document->addScript('catalog/view/javascript/jquery/xd_xd_checkout.block.js');
         }
 
         if ($xd_checkout_settings['countdown']) {
-            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout/xd_checkout.countdown.js');
+            $this->document->addScript('catalog/view/javascript/jquery/xd_xd_checkout.countdown.js');
         }
 
         $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout.css');
@@ -81,7 +81,7 @@ class ControllerCheckoutXdCheckoutCheckout extends Controller
         }
 
         $data = array_merge($data, $this->load->language('checkout/checkout'));
-        $data = array_merge($data, $this->load->language('checkout/xd_checkout/checkout'));
+        $data = array_merge($data, $this->load->language('xd_checkout/checkout'));
 
         // Validate minimum order total
         if ($this->cart->getTotal() < (float)$xd_checkout_settings['minimum_order']) {
@@ -106,7 +106,7 @@ class ControllerCheckoutXdCheckoutCheckout extends Controller
 
         $data['breadcrumbs'][] = array(
             'text'      => $this->language->get('heading_title'),
-            'href'      => $this->url->link('checkout/xd_checkout/checkout', '', true)
+            'href'      => $this->url->link('xd_checkout/checkout', '', true)
         );
 
         if ($xd_checkout_settings['html_header']) {
@@ -194,21 +194,21 @@ class ControllerCheckoutXdCheckoutCheckout extends Controller
         $data['confirmation_page'] = $xd_checkout_settings['confirmation_page'];
 
         if (!$this->customer->isLogged()) {
-            $data['guest'] = $this->load->controller('checkout/xd_checkout/guest');
-            // $data['guest_shipping'] = $this->load->controller('checkout/xd_checkout/guest_shipping');
+            $data['guest'] = $this->load->controller('xd_checkout/guest');
+            // $data['guest_shipping'] = $this->load->controller('xd_checkout/guest_shipping');
 
             if ($xd_checkout_settings['login_module']) {
-                $data['login'] = $this->load->controller('checkout/xd_checkout/login');
+                $data['login'] = $this->load->controller('xd_checkout/login');
             }
         }
 
-        $data['payment_address'] = $this->load->controller('checkout/xd_checkout/payment_address');
-        // $data['shipping_address'] = $this->load->controller('checkout/xd_checkout/shipping_address');
+        $data['payment_address'] = $this->load->controller('xd_checkout/payment_address');
+        // $data['shipping_address'] = $this->load->controller('xd_checkout/shipping_address');
 
 
-        $data['cart'] = $this->load->controller('checkout/xd_checkout/cart');
-        $data['voucher'] = $this->load->controller('checkout/xd_checkout/voucher');
-        $data['terms'] = $this->load->controller('checkout/xd_checkout/terms');
+        $data['cart'] = $this->load->controller('xd_checkout/cart');
+        $data['voucher'] = $this->load->controller('xd_checkout/voucher');
+        $data['terms'] = $this->load->controller('xd_checkout/terms');
 
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['column_right'] = $this->load->controller('common/column_right');
@@ -217,7 +217,7 @@ class ControllerCheckoutXdCheckoutCheckout extends Controller
         $data['footer'] = $this->load->controller('common/footer');
         $data['header'] = $this->load->controller('common/header');
 
-        $this->response->setOutput($this->load->view('checkout/xd_checkout/checkout', $data));
+        $this->response->setOutput($this->load->view('xd_checkout/checkout', $data));
     }
 
     public function country()
@@ -336,7 +336,7 @@ class ControllerCheckoutXdCheckoutCheckout extends Controller
     public function eventPreControllerCheckoutCheckout($route, $data)
     {
         if ($this->config->get('xd_checkout_status')) {
-            $this->response->redirect($this->url->link('checkout/xd_checkout/checkout', '', 'SSL'));
+            $this->response->redirect($this->url->link('xd_checkout/checkout', '', 'SSL'));
         }
     }
 

@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutRegister extends Controller
+class ControllerXdCheckoutRegister extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -15,7 +15,7 @@ class ControllerCheckoutXdCheckoutRegister extends Controller
     public function index()
     {
         $data = $this->load->language('checkout/checkout');
-        $data = array_merge($data, $this->load->language('checkout/xd_checkout/checkout'));
+        $data = array_merge($data, $this->load->language('xd_checkout/checkout'));
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
@@ -38,13 +38,13 @@ class ControllerCheckoutXdCheckoutRegister extends Controller
         // All variables
         $data['field_newsletter'] = $xd_checkout_settings['field_newsletter'];
 
-        return $this->load->view('checkout/xd_checkout/register', $data);
+        return $this->load->view('xd_checkout/register', $data);
     }
 
     public function validate()
     {
         $this->load->language('checkout/checkout');
-        $this->load->language('checkout/xd_checkout/checkout');
+        $this->load->language('xd_checkout/checkout');
 
         $this->load->model('account/customer');
 
@@ -52,7 +52,7 @@ class ControllerCheckoutXdCheckoutRegister extends Controller
 
         // Validate if customer is already logged out.
         if ($this->customer->isLogged()) {
-            $json['redirect'] = $this->url->link('checkout/xd_checkout/checkout', '', true);
+            $json['redirect'] = $this->url->link('xd_checkout/checkout', '', true);
         }
 
         if (!$json) {

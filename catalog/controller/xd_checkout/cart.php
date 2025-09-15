@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutCart extends Controller
+class ControllerXdCheckoutCart extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -15,7 +15,7 @@ class ControllerCheckoutXdCheckoutCart extends Controller
     public function index()
     {
         $data = $this->load->language('checkout/checkout');
-        $data = array_merge($data, $this->load->language('checkout/xd_checkout/checkout'));
+        $data = array_merge($data, $this->load->language('xd_checkout/checkout'));
 
         // Totals
         $this->load->model('setting/extension');
@@ -203,8 +203,8 @@ class ControllerCheckoutXdCheckoutCart extends Controller
 
         $data['edit_cart'] = isset($this->xd_checkout_settings['edit_cart']) ? $this->xd_checkout_settings['edit_cart'] : 0;
 
-        // return $this->load->view('checkout/xd_checkout/cart', $data);
-        $this->response->setOutput($this->load->view('checkout/xd_checkout/cart', $data));
+        // return $this->load->view('xd_checkout/cart', $data);
+        $this->response->setOutput($this->load->view('xd_checkout/cart', $data));
     }
 
     public function update()

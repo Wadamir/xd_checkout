@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutConfirm extends Controller
+class ControllerXdCheckoutConfirm extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -110,7 +110,7 @@ class ControllerCheckoutXdCheckoutConfirm extends Controller
             array_multisort($sort_order, SORT_ASC, $order_data['totals']);
 
             $data = $this->load->language('checkout/checkout');
-            $data = array_merge($data, $this->load->language('checkout/xd_checkout/checkout'));
+            $data = array_merge($data, $this->load->language('xd_checkout/checkout'));
 
             $order_data['invoice_prefix'] = $this->config->get('config_invoice_prefix');
             $order_data['store_id'] = $this->config->get('config_store_id');
@@ -478,8 +478,8 @@ class ControllerCheckoutXdCheckoutConfirm extends Controller
         $data['auto_submit'] = $this->xd_checkout_settings['auto_submit'];
         $data['button_back'] = $this->language->get('button_back');
         $data['payment_target'] = html_entity_decode($this->xd_checkout_settings['payment_target'], ENT_QUOTES);
-        $data['back'] = $this->url->link('checkout/xd_checkout/checkout', '', true);
+        $data['back'] = $this->url->link('xd_checkout/checkout', '', true);
 
-        $this->response->setOutput($this->load->view('checkout/xd_checkout/confirm', $data));
+        $this->response->setOutput($this->load->view('xd_checkout/confirm', $data));
     }
 }
