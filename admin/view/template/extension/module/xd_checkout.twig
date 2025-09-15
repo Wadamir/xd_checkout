@@ -46,7 +46,7 @@
 					<ul class="nav nav-tabs">
 						<li class="hidden"><a href="#tab-home" data-toggle="tab"><i data-toggle="tooltip" title="{{ tab_home }}" class="fa fa-home"></i></a></li>
 						<li class="active"><a href="#tab-general" data-toggle="tab"><i data-toggle="tooltip" title="{{ tab_general }}" class="fa fa-gear"></i> {{ tab_general }}</a></li>
-						<li><a href="#tab-design" data-toggle="tab"><i data-toggle="tooltip" title="{{ tab_design }}" class="fa fa-television"></i> {{ tab_design }}</a></li>
+						<li class="hidden"><a href="#tab-design" data-toggle="tab"><i data-toggle="tooltip" title="{{ tab_design }}" class="fa fa-television"></i> {{ tab_design }}</a></li>
 						<li><a href="#tab-field" data-toggle="tab"><i data-toggle="tooltip" title="{{ tab_field }}" class="fa fa-bars"></i> {{ tab_field }}</a></li>
 						<li><a href="#tab-module" data-toggle="tab"><i data-toggle="tooltip" title="{{ tab_module }}" class="fa fa-puzzle-piece"></i> {{ tab_module }}</a></li>
 						<li><a href="#tab-payment" data-toggle="tab"><i data-toggle="tooltip" title="{{ tab_payment }}" class="fa fa-credit-card"></i> {{ tab_payment }}</a></li>
@@ -135,7 +135,7 @@
 										</select>
 									</div>
 								</div>
-								<div class="form-group col-sm-6">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-minimum-order">
 										<span title="{{ help_minimum_order }}" data-toggle="tooltip">{{ entry_minimum_order }}</span>
 									</label>
@@ -168,8 +168,8 @@
 									</div>
 								</div>
 							</div>
-							<div class="row">
-								<div class="form-group col-sm-6">
+							<div class="row hidden d-none">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-save-data">
 										<span title="{{ help_save_data }}" data-toggle="tooltip">{{ entry_save_data }}</span>
 									</label>
@@ -180,7 +180,7 @@
 										</select>
 									</div>
 								</div>
-								<div class="form-group col-sm-6">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-edit-cart">
 										<span title="{{ help_edit_cart }}" data-toggle="tooltip">{{ entry_edit_cart }}</span>
 									</label>
@@ -192,8 +192,8 @@
 									</div>
 								</div>
 							</div>
-							<div class="row">
-								<div class="form-group col-sm-6">
+							<div class="row hidden d-none">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-highlight-error">
 										<span title="{{ help_highlight_error }}" data-toggle="tooltip">{{ entry_highlight_error }}</span>
 									</label>
@@ -204,7 +204,7 @@
 										</select>
 									</div>
 								</div>
-								<div class="form-group col-sm-6">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-text-error">
 										<span title="{{ help_text_error }}" data-toggle="tooltip">{{ entry_text_error }}</span>
 									</label>
@@ -237,8 +237,8 @@
 									</div>
 								</div>
 							</div>
-							<div class="row">
-								<div class="form-group col-sm-6">
+							<div class="row hidden d-none">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-proceed-button-text">
 										<span title="{{ help_proceed_button_text }}" data-toggle="tooltip">{{ entry_proceed_button_text }}</span>
 									</label>
@@ -252,8 +252,7 @@
 									</div>
 								</div>
 							</div>
-						</div>
-						<div class="tab-pane" id="tab-design">
+                            <hr />
 							<div class="row">
 								<div class="form-group col-sm-6">
 									<label class="col-sm-4 control-label" for="input-load-screen">
@@ -277,9 +276,11 @@
 										</select>
 									</div>
 								</div>
-							</div>
-							<div class="row">
-								<div class="form-group col-sm-6">
+							</div>                            
+						</div>
+						<div class="tab-pane" id="tab-design">
+							<div class="row hidden d-none">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-layout">
 										<span title="{{ help_layout }}" data-toggle="tooltip">{{ entry_layout }}</span>
 									</label>
@@ -291,7 +292,7 @@
 										</select>
 									</div>
 								</div>
-								<div class="form-group col-sm-6">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-responsive">
 										<span title="{{ help_responsive }}" data-toggle="tooltip">{{ entry_responsive }}</span>
 									</label>
@@ -302,8 +303,8 @@
 									</div>
 								</div>
 							</div>
-							<div class="row">
-								<div class="form-group col-sm-6">
+							<div class="row hidden d-none">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-slide-effect">
 										<span title="{{ help_slide_effect }}" data-toggle="tooltip">{{ entry_slide_effect }}</span>
 									</label>
@@ -314,7 +315,7 @@
 										</select>
 									</div>
 								</div>
-								<div class="form-group col-sm-6">
+								<div class="form-group col-sm-6 hidden d-none">
 									<label class="col-sm-4 control-label" for="input-custom-css">{{ entry_custom_css }}</label>
 									<div class="col-sm-8">
 										<textarea name="xd_checkout[custom_css]" id="input-custom-css" class="form-control" rows="5">{{ xd_checkout.custom_css }}</textarea>
@@ -397,11 +398,7 @@
 										<tr>
 											<td>{{ attribute(_context, 'entry_field_' ~ field) }}</td>
 											<td class="text-center"><input type="checkbox" name="xd_checkout[{{ field_name }}][display]" {{ xd_checkout[field_name].display ? ' checked' }}/></td>
-											{% if field == 'postcode' %}
-												<td class="text-center">NA</td>
-											{% else %}
-												<td class="text-center"><input type="checkbox" name="xd_checkout[{{ field_name }}][required]" {{ xd_checkout[field_name].required ? ' checked' }}/></td>
-											{% endif %}
+											<td class="text-center"><input type="checkbox" name="xd_checkout[{{ field_name }}][required]" {{ xd_checkout[field_name].required ? ' checked' }}/></td>
 											<td>
 												{% for language in languages %}
 													<div class="input-group">
@@ -425,6 +422,30 @@
 							</table>
 						</div>
 						<div class="tab-pane" id="tab-module">
+							<div class="row">
+								<div class="form-group col-sm-6">
+									<label class="col-sm-4 control-label" for="input-login-module">
+										<span title="{{ help_login_module }}" data-toggle="tooltip">{{ entry_login_module }}</span>
+									</label>
+									<div class="col-sm-8">
+										<select name="xd_checkout[login_module]" id="input-login-module" class="form-control">
+											<option value="1" {{ xd_checkout.login_module ? ' selected="selected"' : '' }}>{{ text_enabled }}</option>
+											<option value="0" {{ xd_checkout.login_module ? '' : ' selected="selected"' }}>{{ text_disabled }}</option>
+										</select>
+									</div>
+								</div>
+								<div class="form-group col-sm-6">
+									<label class="col-sm-4 control-label" for="input-cart">
+										<span title="{{ help_cart }}" data-toggle="tooltip">{{ entry_cart }}</span>
+									</label>
+									<div class="col-sm-8">
+										<select name="xd_checkout[cart_module]" id="input-cart" class="form-control">
+											<option value="1" {{ xd_checkout.cart_module ? ' selected="selected"' : '' }}>{{ text_enabled }}</option>
+											<option value="0" {{ xd_checkout.cart_module ? '' : ' selected="selected"' }}>{{ text_disabled }}</option>
+										</select>
+									</div>
+								</div>                                
+							</div>                        
 							<div class="row">
 								<div class="form-group col-sm-6">
 									<label class="col-sm-4 control-label" for="input-coupon">
@@ -458,30 +479,6 @@
 										<select name="xd_checkout[reward_module]" id="input-reward" class="form-control">
 											<option value="1" {{ xd_checkout.reward_module ? ' selected="selected"' : '' }}>{{ text_enabled }}</option>
 											<option value="0" {{ xd_checkout.reward_module ? '' : ' selected="selected"' }}>{{ text_disabled }}</option>
-										</select>
-									</div>
-								</div>
-								<div class="form-group col-sm-6">
-									<label class="col-sm-4 control-label" for="input-cart">
-										<span title="{{ help_cart }}" data-toggle="tooltip">{{ entry_cart }}</span>
-									</label>
-									<div class="col-sm-8">
-										<select name="xd_checkout[cart_module]" id="input-cart" class="form-control">
-											<option value="1" {{ xd_checkout.cart_module ? ' selected="selected"' : '' }}>{{ text_enabled }}</option>
-											<option value="0" {{ xd_checkout.cart_module ? '' : ' selected="selected"' }}>{{ text_disabled }}</option>
-										</select>
-									</div>
-								</div>
-							</div>
-							<div class="row">
-								<div class="form-group col-sm-6">
-									<label class="col-sm-4 control-label" for="input-login-module">
-										<span title="{{ help_login_module }}" data-toggle="tooltip">{{ entry_login_module }}</span>
-									</label>
-									<div class="col-sm-8">
-										<select name="xd_checkout[login_module]" id="input-login-module" class="form-control">
-											<option value="1" {{ xd_checkout.login_module ? ' selected="selected"' : '' }}>{{ text_enabled }}</option>
-											<option value="0" {{ xd_checkout.login_module ? '' : ' selected="selected"' }}>{{ text_disabled }}</option>
 										</select>
 									</div>
 								</div>
@@ -986,9 +983,11 @@
                         json.zone.forEach(zone => {
                             html += `<option value="${zone.zone_id}"`;
 
-                            if (zone.zone_id == {{ xd_checkout.field_zone.default }}) {
-                                html += ' selected="selected"';
-                            }
+                            {% if xd_checkout.field_zone.default %}
+                                if (zone.zone_id == {{ xd_checkout.field_zone.default }}) {
+                                    html += ' selected="selected"';
+                                }
+                            {% endif %}
 
                             html += `>${zone.name}</option>`;
                         });

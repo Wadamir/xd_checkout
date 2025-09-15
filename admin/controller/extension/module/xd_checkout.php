@@ -228,7 +228,7 @@ class ControllerExtensionModuleXdCheckout extends Controller
             'minimum_order'         => '0',
             'debug'                 => '0',
             'confirmation_page'     => '1',
-            'save_data'             => '1',
+            'save_data'             => '0',
             'edit_cart'             => '0',
             'highlight_error'       => '0',
             'text_error'            => '0',
