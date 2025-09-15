@@ -1,6 +1,6 @@
 <?php
 // require_once(DIR_SYSTEM . 'library/equotix/xd_checkout/equotix.php');
-class ControllerXdCheckoutCheckout extends Controller
+class ControllerExtensionXdCheckoutCheckout extends Controller
 {
     protected $code = 'xd_checkout';
 
@@ -81,7 +81,7 @@ class ControllerXdCheckoutCheckout extends Controller
         }
 
         $data = array_merge($data, $this->load->language('checkout/checkout'));
-        $data = array_merge($data, $this->load->language('xd_checkout/checkout'));
+        $data = array_merge($data, $this->load->language('extension/xd_checkout/checkout'));
 
         // Validate minimum order total
         if ($this->cart->getTotal() < (float)$xd_checkout_settings['minimum_order']) {

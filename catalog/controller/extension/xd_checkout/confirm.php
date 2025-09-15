@@ -1,5 +1,5 @@
 <?php
-class ControllerXdCheckoutConfirm extends Controller
+class ControllerExtensionXdCheckoutConfirm extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -110,7 +110,7 @@ class ControllerXdCheckoutConfirm extends Controller
             array_multisort($sort_order, SORT_ASC, $order_data['totals']);
 
             $data = $this->load->language('checkout/checkout');
-            $data = array_merge($data, $this->load->language('xd_checkout/checkout'));
+            $data = array_merge($data, $this->load->language('extension/xd_checkout/checkout'));
 
             $order_data['invoice_prefix'] = $this->config->get('config_invoice_prefix');
             $order_data['store_id'] = $this->config->get('config_store_id');
