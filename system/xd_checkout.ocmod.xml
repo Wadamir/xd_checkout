@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<code>963-503-oc-23</code>
+    <name>XD Checkout</name>
+    <version>1.0.0</version>
+    <author><![CDATA[<span style="color:#0066cc"><b>XDomus.ru</b></span>]]></author>
+    <link>//xdomus.ru/opencart/</link>
+	<file path="catalog/controller/startup/startup.php">
+		<operation error="skip">
+			<search><![CDATA[$this->registry->set('url']]></search>
+			<add position="after"><![CDATA[
+                $this->load->library('xd_checkout/rewrite');
+                $xd_checkout_rewrite = new \Xd_checkout\Rewrite($this->config);
+                $this->url->addRewrite($xd_checkout_rewrite);
+                $xd_checkout_rewrite->redirect();
+            ]]></add>
+		</operation>
+	</file> 
+</modification>

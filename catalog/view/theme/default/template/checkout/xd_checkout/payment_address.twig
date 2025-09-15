@@ -1,0 +1,196 @@
+{% macro renderField(field, label, name, value, type, options, is_required) %}
+    <div class="w-100 form-group{{ is_required ? ' required' }}" data-value="{{value}}">
+        <label for="{{ name }}" class="control-label">{{ label }}</label>
+        {% if type == 'select' %}
+            <select name="{{ name }}" id="{{ name }}" class="form-control" {{ is_required ? 'required' }}>
+                {% for option in options %}
+                    <option value="{{ option.value }}" {{ option.value == value ? 'selected' }}>{{ option.label }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            <input type="text" name="{{ name }}" id="{{ name }}" value="{{ value }}" class="form-control" {{ is_required ? 'required' }} />
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% import _self as forms %}
+
+<!-- ADDRESS DATA (hidden by default) -->
+<div id="payment_address-data">
+    <div class="w-100 mb-16">
+        <a href="#" id="button-show-personal" class="btn btn-link btn-text-icon btn-text-icon-left" onclick="toggleAccordion('address_shipping-method', 'guest', false, 0); return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-short" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5"/>
+            </svg>            
+            {{ text_show_personal }}
+        </a>
+    </div>
+    {% set address_selects = {
+        'field_country': {'name': 'country_id', 'label': entry_country, 'options': countries|map(c => {'value': c.country_id, 'label': c.name})},
+        'field_zone':    {'name': 'zone_id',    'label': entry_zone,    'options': zones|map(z => {'value': z.zone_id, 'label': z.name})}
+    } %}
+
+    {% for key, f in fields_address %}
+        {% set is_required = f.required ?? false %}
+        {% if f.display %}
+            {% if attribute(address_selects, key) is defined %}
+                {% set input_value = key == 'field_country' ? country_id : key == 'field_zone' ? zone_id : '' %}
+                {{ forms.renderField(
+                    key,
+                    attribute(address_selects[key], 'label'),
+                    attribute(address_selects[key], 'name'),
+                    input_value,
+                    'select',
+                    attribute(address_selects[key], 'options'),
+                    is_required
+                ) }}
+            {% else %}
+                {% set input_name = key|replace({'field_': ''}) %}
+                {% set input_value = attribute(_context, input_name) %}
+                {{ forms.renderField(key, attribute(_context, 'entry_' ~ input_name), input_name, input_value, 'text', '', is_required) }}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</div>
+
+<!-- CUSTOM FIELDS (hidden by default) -->
+<div id="address_custom-fields">
+    {% for custom_field in custom_fields %}
+        {% if custom_field.location == 'address' %}
+            <div class="w-100 form-group{{ custom_field.required ? ' required' }}"
+                 data-sort="{{ custom_field.sort_order }}"
+                 id="address_custom-field{{ custom_field.custom_field_id }}">
+                 
+                <label class="control-label" for="input-address_custom-field{{ custom_field.custom_field_id }}">
+                    {{ custom_field.name }}
+                </label>
+
+                {% if custom_field.type == 'select' %}
+                    <select name="custom_field[{{ custom_field.custom_field_id }}]"
+                            id="input-address_custom-field{{ custom_field.custom_field_id }}"
+                            class="form-control custom-field"
+                            {{ custom_field.required ? 'required' }}>
+                        <option value="">{{ text_select }}</option>
+                        {% for custom_field_value in custom_field.custom_field_value %}
+                            {% if guest_custom_field[custom_field.custom_field_id]
+                               and custom_field_value.custom_field_value_id == guest_custom_field[custom_field.custom_field_id] %}
+                                <option value="{{ custom_field_value.custom_field_value_id }}" selected="selected">
+                                    {{ custom_field_value.name }}
+                                </option>
+                            {% else %}
+                                <option value="{{ custom_field_value.custom_field_value_id }}">
+                                    {{ custom_field_value.name }}
+                                </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                {% endif %}
+
+                {% if custom_field.type == 'radio' %}
+                    {% for custom_field_value in custom_field.custom_field_value %}
+                        <div class="radio">
+                            <label>
+                                <input type="radio"
+                                       name="custom_field[{{ custom_field.custom_field_id }}]"
+                                       value="{{ custom_field_value.custom_field_value_id }}"
+                                       class="custom-field"
+                                       {{ guest_custom_field[custom_field.custom_field_id] == custom_field_value.custom_field_value_id ? 'checked="checked"' }}
+                                       {{ custom_field.required ? 'required' }} />
+                                {{ custom_field_value.name }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if custom_field.type == 'checkbox' %}
+                    {% for custom_field_value in custom_field.custom_field_value %}
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox"
+                                       name="custom_field[{{ custom_field.custom_field_id }}][]"
+                                       value="{{ custom_field_value.custom_field_value_id }}"
+                                       class="custom-field"
+                                       {{ guest_custom_field[custom_field.custom_field_id] is defined
+                                          and custom_field_value.custom_field_value_id in guest_custom_field[custom_field.custom_field_id]
+                                          ? 'checked="checked"' }}
+                                       {{ custom_field.required ? 'required' }} />
+                                {{ custom_field_value.name }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if custom_field.type == 'text' %}
+                    <input type="text"
+                           name="custom_field[{{ custom_field.custom_field_id }}]"
+                           value="{{ guest_custom_field[custom_field.custom_field_id] ?? custom_field.value }}"
+                           placeholder="{{ custom_field.name }}"
+                           id="input-address_custom-field{{ custom_field.custom_field_id }}"
+                           class="form-control custom-field"
+                           {{ custom_field.required ? 'required' }} />
+                {% endif %}
+
+                {% if custom_field.type == 'textarea' %}
+                    <textarea name="custom_field[{{ custom_field.custom_field_id }}]"
+                              rows="5"
+                              placeholder="{{ custom_field.name }}"
+                              id="input-address_custom-field{{ custom_field.custom_field_id }}"
+                              class="form-control custom-field"
+                              {{ custom_field.required ? 'required' }}>{{ guest_custom_field[custom_field.custom_field_id] ?? custom_field.value }}</textarea>
+                {% endif %}
+
+                {% if custom_field.type == 'file' %}
+                    <br />
+                    <button type="button"
+                            id="button-payment-custom-field{{ custom_field.custom_field_id }}"
+                            data-loading-text="{{ text_loading }}"
+                            class="btn btn-default">
+                        <i class="fa fa-upload"></i>{{ button_upload }}
+                    </button>
+                    <input type="hidden"
+                           name="custom_field[{{ custom_field.custom_field_id }}]"
+                           value="{{ guest_custom_field[custom_field.custom_field_id] ?? '' }}"
+                           class="custom-field"
+                           {{ custom_field.required ? 'required' }} />
+                {% endif %}
+
+                {% if custom_field.type == 'date' %}
+                    <input type="date"
+                           name="custom_field[{{ custom_field.custom_field_id }}]"
+                           value="{{ guest_custom_field[custom_field.custom_field_id] ?? custom_field.value }}"
+                           placeholder="{{ custom_field.name }}"
+                           id="input-address_custom-field{{ custom_field.custom_field_id }}"
+                           class="form-control custom-field"
+                           {{ custom_field.required ? 'required' }} />
+                {% endif %}
+
+                {% if custom_field.type == 'time' %}
+                    <input type="time"
+                           name="custom_field[{{ custom_field.custom_field_id }}]"
+                           value="{{ guest_custom_field[custom_field.custom_field_id] ?? custom_field.value }}"
+                           placeholder="{{ custom_field.name }}"
+                           id="input-address_custom-field{{ custom_field.custom_field_id }}"
+                           class="form-control custom-field"
+                           {{ custom_field.required ? 'required' }} />
+                {% endif %}
+
+                {% if custom_field.type == 'datetime' %}
+                    <input type="datetime-local"
+                           name="custom_field[{{ custom_field.custom_field_id }}]"
+                           value="{{ guest_custom_field[custom_field.custom_field_id] ?? custom_field.value }}"
+                           placeholder="{{ custom_field.name }}"
+                           id="input-address_custom-field{{ custom_field.custom_field_id }}"
+                           class="form-control custom-field"
+                           {{ custom_field.required ? 'required' }} />
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+<!--  LABELS -->
+<div id="payment-address-labels-holder">
+    <input type="hidden" name="payment_address" value="new" id="payment_address" class="hide" required />
+    <input type="checkbox" name="shipping_address" value="1" id="shipping" checked="checked" class="hide" />
+</div>

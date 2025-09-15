@@ -1,0 +1,143 @@
+{% macro renderField(field, label, name, value, type, options, is_required) %}
+    <div class="w-100 form-group{{ is_required ? ' required' }}" data-value="{{value}}">
+        <label for="{{ name }}" class="control-label">{{ label }}</label>
+        {% if type == 'select' %}
+            <select name="{{ name }}" id="{{ name }}" class="form-control" {{ is_required ? 'required' }}>
+                {% for option in options %}
+                    <option value="{{ option.value }}" {{ option.value == value ? 'selected' }}>{{ option.label }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            <input type="text" name="{{ name }}" id="{{ name }}" value="{{ value }}" class="form-control" {{ is_required ? 'required' }} />
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% import _self as forms %}
+<div id="guest-data">
+    {% set personal_selects = {
+        'field_customer_group': {'name': 'customer_group_id', 'label': entry_customer_group, 'options': customer_groups|map(c => {'value': c.customer_group_id, 'label': c.name})},
+    } %}
+    {% for key, f in fields_personal %}
+        {% set is_required = f.required ?? false %}
+        {% if f.display %}
+            {% if attribute(personal_selects, key) is defined %}
+                {% set input_value = key == 'field_customer_group' ? customer_group_id : attribute(_context, personal_selects[key].name) %}
+                {{ forms.renderField(
+                    key,
+                    attribute(personal_selects[key], 'label'),
+                    attribute(personal_selects[key], 'name'),
+                    input_value,
+                    'select',
+                    attribute(personal_selects[key], 'options'),
+                    is_required
+                ) }}
+            {% else %}
+                {% set input_name = key|replace({'field_': ''}) %}
+                {% set input_value = attribute(_context, input_name) %}
+                {{ forms.renderField(key, attribute(_context, 'entry_' ~ input_name), input_name, input_value, 'text', '', is_required) }}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</div>
+
+<!-- CUSTOM FIELDS (hidden by default) -->
+<div id="account_custom-fields">
+    {% for custom_field in custom_fields %} 
+        {% if custom_field.location == 'account' %} 
+            <div class="w-100 form-group{{ custom_field.required ? ' required' }}" data-sort="{{ custom_field.sort_order }}" id="account_custom-field{{ custom_field.custom_field_id }}">
+                <label class="control-label" for="input-account_custom-field{{ custom_field.custom_field_id }}">{{ custom_field.name }}</label>
+                {% if custom_field.type == 'select' %} 
+                    <select name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" id="input-account_custom-field{{ custom_field.custom_field_id }}" class="form-control custom-field" {{ custom_field.required ? 'required' }}>
+                        <option value="">{{ text_select }}</option>
+                        {% for custom_field_value in custom_field.custom_field_value %} 
+                            {% if guest_custom_field.custom_field.custom_field_id and custom_field_value.custom_field_value_id == guest_custom_field.custom_field.custom_field_id %} 
+                                <option value="{{ custom_field_value.custom_field_value_id }}" selected="selected">{{ custom_field_value.name }}</option>
+                            {% else %}   
+                                <option value="{{ custom_field_value.custom_field_value_id }}">{{ custom_field_value.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                {% endif %}
+                {% if custom_field.type == 'radio' %} 
+                    {% for custom_field_value in custom_field %} 
+                        <div class="radio">
+                            {% if guest_custom_field.custom_field.custom_field_id and custom_field_value.custom_field_value_id == guest_custom_field.custom_field.custom_field_id %} 
+                                <label>
+                                    <input type="radio" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{{ custom_field_value.custom_field_value_id }}" checked="checked" class="custom-field" {{ custom_field.required ? 'required' }} />
+                                    {{ custom_field_value.name }}
+                                </label>
+                            {% else %}   
+                                <label>
+                                    <input type="radio" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{{ custom_field_value.custom_field_value_id }}" class="custom-field" {{ custom_field.required ? 'required' }} />
+                                    {{ custom_field_value.name }}
+                                </label>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if custom_field.type == 'checkbox' %} 
+                    {% for custom_field_value in custom_field %} 
+                        <div class="checkbox">
+                            {% if guest_custom_field.custom_field.custom_field_id and custom_field_value.custom_field_value_id in guest_custom_field.custom_field.custom_field_id %}
+                                <label>
+                                    <input type="checkbox" name="custom_field[{{ custom_field.location}}][{{ custom_field.custom_field_id }}][]" value="{{ custom_field_value.custom_field_value_id }}" checked="checked" class="custom-field" {{ custom_field.required ? 'required' }} />
+                                    {{ custom_field_value.name }}
+                                </label>
+                            {% else %}   
+                                <label>
+                                    <input type="checkbox" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}][]" value="{{ custom_field_value.custom_field_value_id }}" class="custom-field" {{ custom_field.required ? 'required' }} />
+                                    {{ custom_field_value.name }}
+                                </label>
+                            {% endif %} 
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if custom_field.type == 'text' %} 
+                    <input type="text" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{{ guest_custom_field[custom_field.custom_field_id] ? guest_custom_field[custom_field.custom_field_id] : custom_field.value }}" placeholder="{{ custom_field.name }}" id="input-account_custom-field{{ custom_field.custom_field_id }}" class="form-control custom-field" {{ custom_field.required ? 'required' }} />
+                {% endif %} 
+                {% if custom_field.type == 'textarea' %} 
+                    <textarea name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" rows="5" placeholder="{{ custom_field.name }}" id="input-account_custom-field{{ custom_field.custom_field_id }}" class="form-control custom-field" {{ custom_field.required ? 'required' }}>{{ guest_custom_field[custom_field.custom_field_id] ? guest_custom_field[custom_field.custom_field_id] : custom_field.value }}</textarea>
+                {% endif %} 
+                {% if custom_field.type == 'file' %} 
+                    <br />
+                    <button type="button" id="button-payment-custom-field{{ custom_field.custom_field_id }}" data-loading-text="{{ text_loading }}" class="btn btn-default"><i class="fa fa-upload"></i>{{ button_upload }}</button>
+                    <input type="hidden" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{{ guest_custom_field[custom_field.custom_field_id] ? guest_custom_field[custom_field.custom_field_id] }}" class="custom-field" {{ custom_field.required ? 'required' }} />
+                {% endif %} 
+                {% if custom_field.type == 'date' %} 
+                    <input type="text" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{{ guest_custom_field[custom_field.custom_field_id] ? guest_custom_field[custom_field.custom_field_id] : custom_field.value }}" placeholder="{{ custom_field.name }}" id="input-account_custom-field{{ custom_field.custom_field_id }}" class="form-control date custom-field" {{ custom_field.required ? 'required' }} />
+                {% endif %} 
+                {% if custom_field.type == 'time' %} 
+                    <input type="text" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{{ guest_custom_field[custom_field.custom_field_id] ? guest_custom_field[custom_field.custom_field_id] : custom_field.value }}" placeholder="{{ custom_field.name }}" id="input-account_custom-field{{ custom_field.custom_field_id }}" class="form-control time custom-field" {{ custom_field.required ? 'required' }} />
+                {% endif %} 
+                {% if custom_field.type == 'datetime' %} 
+                    <input type="text" name="custom_field[{{ custom_field.location }}][{{ custom_field.custom_field_id }}]" value="{{ guest_custom_field[custom_field.custom_field_id] ? guest_custom_field[custom_field.custom_field_id] : custom_field.value }}" placeholder="{{ custom_field.name }}" id="input-account_custom-field{{ custom_field.custom_field_id }}" class="form-control datetime custom-field" {{ custom_field.required ? 'required' }} />
+                {% endif %} 
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>    
+
+<!--  LABELS -->
+<div id="guest-labels-holder" class="w-100">
+    {% if field_register.display %} 
+        {% if not guest_checkout or field_register.required %} 
+            <input type="checkbox" name="create_account" value="1" id="create" class="hide" checked="checked" />
+        {% else %}
+            <input type="checkbox" name="create_account" value="1" id="create"{{ create_account ? ' checked="checked"' }} />
+            <label for="create">{{ text_create_account }}</label><br />
+        {% endif %} 
+        <div id="create_account">{{ register }}</div>
+    {% else %}
+        <input type="checkbox" name="create_account" value="1" id="create" checked="checked" class="hide" />
+    {% endif %} 
+</div>    
+
+<div class="w-100">
+    <a href="#" id="button-show-shipping" class="btn btn-primary btn-block w-100 btn-text-icon btn-text-icon-right disabled" onclick="toggleAccordion('guest', 'address_shipping-method', true, 1); return false;">
+        {{ text_show_shipping }}
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-short" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+        </svg>
+    </a>
+</div>

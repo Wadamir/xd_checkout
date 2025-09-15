@@ -1,0 +1,11 @@
+<div class="terms">
+    <input type="checkbox" name="agree" value="1" />
+    <label>
+        {% if text_agree %}
+            {{ text_agree }}
+        {% endif %}
+    </label>
+    <div class="w-100 mb-16">
+        <button type="button" id="button-payment-method" class="btn btn-primary btn-block w-100" data-loading-text="{{ text_loading }}">{{ button_finish }}</button>
+    </div>
+</div>

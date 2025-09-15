@@ -1,0 +1,58 @@
+<div class="xd_checkout-cart" data-step="{{ step }}">
+    {% if products or vouchers %}
+        <!-- Products -->
+        {% for product in products %}
+            <div class="xd_checkout-row">
+                <div class="xd_checkout-cell image">
+                    {% if product.thumb %}
+                        <a href="{{ product.href }}">
+                            <img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}"/>
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="xd_checkout-cell name">
+                    <a href="{{ product.href }}">{{ product.name }}</a>
+                    <div>
+                        {% for option in product.option %}
+                            <small>{{ option.name }}: {{ option.value }}</small>
+                        {% endfor %}
+                        {% if product.reward %}
+                            <small>{{ product.reward }}</small>
+                        {% endif %}
+                        {% if product.recurring %}
+                            <span class="label label-info">{{ text_recurring_item }}</span>
+                            <small>{{ product.recurring }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="xd_checkout-cell quantity">
+                    {{ product.price }}&nbsp;x&nbsp;{{ product.quantity }}
+                </div>
+                <div class="xd_checkout-cell total text-right">{{ product.total }}</div>
+            </div>
+        {% endfor %}
+
+        <!-- Vouchers -->
+        {% for voucher in vouchers %}
+            <div class="xd_checkout-row">
+                <div class="xd_checkout-cell image"></div>
+                <div class="xd_checkout-cell name">{{ voucher.description }}</div>
+                <div class="xd_checkout-cell quantity">x&nbsp;1</div>
+                <div class="xd_checkout-cell price1">{{ voucher.amount }}</div>
+                <div class="xd_checkout-cell total">{{ voucher.amount }}</div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Totals -->
+<div class="total-list margin-b0">
+    {% for total in totals %}
+        <div class="xd_checkout-row">
+            <div class="xd_checkout-cell text-left" style="flex: 4">
+                <b>{{ total.title }}:</b>
+            </div>
+            <div class="xd_checkout-cell text-right" style="flex: 1">{{ total.text }}</div>
+        </div>
+    {% endfor %}
+</div>

@@ -1,0 +1,151 @@
+    {% if shipping_methods %}
+        {% if shipping %}
+            <div class="shipping-methods">
+                {% for key, shipping_method in shipping_methods %}
+                    {% if not shipping_method.error %}
+                        {% for quote in shipping_method.quote %}
+                            <div class="shipping-method">
+                                {% if quote.code == code %}
+                                    <input type="radio" name="shipping_method" value="{{ quote.code }}" id="{{ quote.code }}" checked="checked" />
+                                {% else %}
+                                    <input type="radio" name="shipping_method" value="{{ quote.code }}" id="{{ quote.code }}" />
+                                {% endif %}
+                                <label for="{{ quote.code }}">
+                                    {% if shipping_logo[key] %}
+                                        <img src="{{ shipping_logo[key] }}" alt="{{ shipping_method.title }}" title="{{ shipping_method.title }}" />
+                                    {% endif %}
+                                    <div class="shipping-title">{{ quote.title }}</div>
+                                    <div class="shipping-price">{{ quote.text }}</div>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="shipping-error">
+                            {{ shipping_method.error }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <select class="form-control" name="shipping_method">
+                {% for shipping_method in shipping_methods %}
+                    {% if not shipping_method.error %}
+                        {% for quote in shipping_method.quote %}
+                            {% if quote.code == code %}
+                                {% set code = quote.code %}
+                                {% set exists = true %}
+                                <option value="{{ quote.code }}" selected="selected">
+                            {% else %}
+                                <option value="{{ quote.code }}">
+                            {% endif %}
+                                {{ quote.title }}&nbsp;&nbsp;({{ quote.text }})
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <br />
+        {% endif %}
+        <br />
+    {% endif %}
+
+    <input type="text" name="delivery_date" value="" class="hide" />
+    <select name="delivery_time" class="hide"><option value=""></option></select>
+
+    <script type="text/javascript"><!--
+    $('#shipping-method input[name=\'shipping_method\'], #shipping-method select[name=\'shipping_method\']').on('change', function() {
+        {% if not logged %}
+            if ($('#payment-address input[name=\'shipping_address\']:checked').val()) {
+                var post_data = $('#payment-address input[type=\'text\'], #payment-address input[type=\'checkbox\']:checked, #payment-address input[type=\'radio\']:checked, #payment-address input[type=\'hidden\'], #payment-address select, #shipping-method input[type=\'text\'], #shipping-method input[type=\'checkbox\']:checked, #shipping-method input[type=\'radio\']:checked, #shipping-method input[type=\'hidden\'], #shipping-method select, #shipping-method textarea');
+            } else {
+                var post_data = $('#shipping-address input[type=\'text\'], #shipping-address input[type=\'checkbox\']:checked, #shipping-address input[type=\'radio\']:checked, #shipping-address input[type=\'hidden\'], #shipping-address select, #shipping-method input[type=\'text\'], #shipping-method input[type=\'checkbox\']:checked, #shipping-method input[type=\'radio\']:checked, #shipping-method input[type=\'hidden\'], #shipping-method select, #shipping-method textarea');
+            }
+
+            $.ajax({
+                url: 'index.php?route=checkout/xd_checkout/shipping_method/set',
+                type: 'post',
+                data: post_data,
+                dataType: 'html',
+                cache: false,
+                success: function(html) {
+                    {% if cart %}
+                        loadCart();
+                    {% endif %}
+                    {% if shipping_reload %}
+                        reloadPaymentMethod();
+                    {% endif %}
+                },
+                {% if debug %}
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+                {% endif %}
+            });
+        {% else %}
+            if ($('#shipping-address input[name=\'shipping_address\']:checked').val() == 'new') {
+                var url = 'index.php?route=extension/xd_checkout/shipping_method/set';
+                var post_data = $('#shipping-address input[type=\'text\'], #shipping-address input[type=\'checkbox\']:checked, #shipping-address input[type=\'radio\']:checked, #shipping-address input[type=\'hidden\'], #shipping-address select, #shipping-method input[type=\'text\'], #shipping-method input[type=\'checkbox\']:checked, #shipping-method input[type=\'radio\']:checked, #shipping-method input[type=\'hidden\'], #shipping-method select, #shipping-method textarea');
+            } else {
+                var url = 'index.php?route=extension/xd_checkout/shipping_method/set&address_id=' + $('#shipping-address select[name=\'address_id\']').val();
+                var post_data = $('#shipping-method input[type=\'text\'], #shipping-method input[type=\'checkbox\']:checked, #shipping-method input[type=\'radio\']:checked, #shipping-method input[type=\'hidden\'], #shipping-method select, #shipping-method textarea');
+            }
+
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: post_data,
+                dataType: 'html',
+                cache: false,
+                success: function(html) {
+                    {% if cart %}
+                        loadCart();
+                    {% endif %}
+                    {% if shipping_reload %}
+                        if ($('#payment-address input[name=\'payment_address\']').val() == 'new') {
+                            reloadPaymentMethod();
+                        } else {
+                            reloadPaymentMethodById($('#payment-address select[name=\'address_id\']').val());
+                        }
+                    {% endif %}
+                },
+                {% if debug %}
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+                {% endif %}
+            });
+        {% endif %}
+    });
+
+    $(document).ready(function() {
+        $('#shipping-method input[name=\'shipping_method\']:checked, #shipping-method select[name=\'shipping_method\']').trigger('change');
+    });
+
+    {% if delivery and delivery_delivery_time == '1' %}
+        $(document).ready(function() {
+            $('input[name=\'delivery_date\']').datetimepicker({
+                format: 'YYYY-MM-DD HH:mm',
+                minDate: '{{ delivery_min }}',
+                maxDate: '{{ delivery_max }}',
+                disabledDates: [{{ delivery_unavailable }}],
+                enabledHours: [{{ hours }}],
+                ignoreReadonly: true,
+                {% if delivery_days_of_week != '' %}
+                    daysOfWeekDisabled: [{{ delivery_days_of_week }}]
+                {% endif %}
+            });
+        });
+    {% elseif delivery and (delivery_delivery_time == '3' or delivery_delivery_time == '0') %}
+        $('input[name=\'delivery_date\']').datetimepicker({
+            format: 'YYYY-MM-DD',
+            minDate: '{{ delivery_min }}',
+            maxDate: '{{ delivery_max }}',
+            disabledDates: [{{ delivery_unavailable }}],
+            ignoreReadonly: true,
+            {% if delivery_days_of_week != '' %}
+                daysOfWeekDisabled: [{{ delivery_days_of_week }}]
+            {% endif %}
+        });
+    {% endif %}
+    //--></script>
+</div>
