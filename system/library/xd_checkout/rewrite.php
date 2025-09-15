@@ -21,6 +21,11 @@ class Rewrite
         $debug = isset($_GET['debug']) ? true : false;
 
         if (!$debug && !empty($this->config)) {
+            // Get xd_checkout status
+            $xd_checkout_status = $this->config->get('module_xd_checkout_status');
+            if (!$xd_checkout_status) {
+                return $url;
+            }
             // Only replace if not already rewritten
             // if (strpos($url, 'xd_checkout/cart') === false) {
             //     $url = str_replace('checkout/cart', 'extension/xd_checkout/checkout', $url);
@@ -37,6 +42,11 @@ class Rewrite
     public function redirect()
     {
         $route = isset($_GET['route']) ? $_GET['route'] : '';
+        // Get xd_checkout status
+        $xd_checkout_status = $this->config->get('module_xd_checkout_status');
+        if (!$xd_checkout_status) {
+            return;
+        }
         // if ($route == 'checkout/cart') {
         //     header('Location: ' . $this->rewrite('index.php?route=checkout/checkout'));
         //     exit;

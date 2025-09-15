@@ -418,11 +418,7 @@
 													</div>
 												{% endfor %}
 											</td>
-											{% if field == 'comment' %}
-												<td class="text-center">NA</td>
-											{% else %}
-												<td><input type="text" name="xd_checkout[{{ field_name }}][sort_order]" value="{{ xd_checkout[field_name].sort_order }}" class="form-control"/></td>
-											{% endif %}
+											<td><input type="text" name="xd_checkout[{{ field_name }}][sort_order]" value="{{ xd_checkout[field_name].sort_order }}" class="form-control"/></td>
 										</tr>
 									{% endif %}
 								{% endfor %}

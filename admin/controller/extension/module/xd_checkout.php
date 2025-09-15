@@ -221,138 +221,147 @@ class ControllerExtensionModuleXdCheckout extends Controller
 
         $this->load->model('setting/setting');
 
+        // Default settings
+        // {"status":"0","minimum_order":"","debug":"0","confirmation_page":"0","save_data":"0","edit_cart":"0","highlight_error":"0","text_error":"0","auto_submit":"0","payment_target":"","proceed_button_text":{"1":""},"load_screen":"0","loading_display":"0","layout":"1","responsive":"1","slide_effect":"0","custom_css":"","field_firstname":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_lastname":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_email":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_telephone":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_company":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_customer_group":{"default":"1","sort_order":""},"field_address_1":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_address_2":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_city":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_postcode":{"default":{"1":""},"placeholder":{"1":""},"sort_order":""},"field_country":{"default":"176","sort_order":""},"field_zone":{"sort_order":""},"field_newsletter":{"sort_order":""},"field_register":{"sort_order":""},"field_comment":{"default":{"1":""},"placeholder":{"1":""}},"coupon_module":"0","voucher_module":"0","reward_module":"0","cart_module":"0","login_module":"0","html_header":{"1":""},"html_footer":{"1":""},"payment_module":"0","payment_reload":"0","payment":"0","payment_default":"cod","payment_logo":{"cod":"","free_checkout":""},"shipping_module":"0","shipping_reload":"0","shipping":"0","shipping_default":"flat","shipping_logo":{"flat":""},"survey":"0","survey_required":"0","survey_text":{"1":""},"survey_type":"0","delivery":"0","delivery_time":"0","delivery_required":"0","delivery_unavailable":"","delivery_min":"","delivery_max":"","delivery_min_hour":"","delivery_max_hour":"","delivery_days_of_week":"","countdown":"0","countdown_start":"0","countdown_date_start":"","countdown_date_end":"","countdown_time":"","countdown_text":{"1":""}}
         $data = array(
-            'xd_checkout_status'                => '0',
-            'xd_checkout_minimum_order'         => '0',
-            'xd_checkout_debug'                 => '0',
-            'xd_checkout_confirmation_page'     => '1',
-            'xd_checkout_save_data'             => '1',
-            'xd_checkout_edit_cart'             => '1',
-            'xd_checkout_highlight_error'       => '1',
-            'xd_checkout_text_error'            => '1',
-            'xd_checkout_auto_submit'           => '0',
-            'xd_checkout_payment_target'        => '#button-confirm, .button, .btn',
-            'xd_checkout_load_screen'           => '1',
-            'xd_checkout_loading_display'       => '1',
-            'xd_checkout_layout'                => '2',
-            'xd_checkout_responsive'            => '1',
-            'xd_checkout_slide_effect'          => '0',
-            'xd_checkout_field_firstname'       => array(
+            'status'                => '0',
+            'minimum_order'         => '0',
+            'debug'                 => '0',
+            'confirmation_page'     => '1',
+            'save_data'             => '1',
+            'edit_cart'             => '0',
+            'highlight_error'       => '0',
+            'text_error'            => '0',
+            'auto_submit'           => '1',
+            'payment_target'        => '#button-confirm, .button, .btn',
+            'load_screen'           => '1',
+            'loading_display'       => '1',
+            'layout'                => '2',
+            'responsive'            => '1',
+            'slide_effect'          => '0',
+            'custom_css'            => '',
+            'field_firstname'       => array(
                 'display'           => '1',
                 'required'          => '1',
-                'default'           => '',
+                'default'           => [],
                 'sort_order'        => '1'
             ),
-            'xd_checkout_field_lastname'        => array(
+            'field_lastname'        => array(
                 'display'           => '1',
                 'required'          => '1',
-                'default'           => '',
+                'default'           => [],
                 'sort_order'        => '2'
             ),
-            'xd_checkout_field_email'            => array(
+            'field_email'           => array(
                 'display'           => '1',
                 'required'          => '1',
-                'default'           => '',
+                'default'           => [],
                 'sort_order'        => '3'
             ),
-            'xd_checkout_field_telephone'        => array(
+            'field_telephone'       => array(
                 'display'           => '1',
                 'required'          => '1',
-                'default'           => '',
+                'default'           => [],
                 'sort_order'        => '4'
             ),
-            'xd_checkout_field_company'        => array(
-                'display'           => '1',
-                'required'          => '0',
-                'default'           => '',
-                'sort_order'        => '6'
-            ),
-            'xd_checkout_field_customer_group' => array(
-                'display'           => '1',
-                'required'          => '',
-                'default'           => '',
-                'sort_order'        => '7'
-            ),
-            'xd_checkout_field_address_1'        => array(
-                'display'           => '1',
-                'required'          => '1',
-                'default'           => '',
-                'sort_order'        => '8'
-            ),
-            'xd_checkout_field_address_2'        => array(
+            'field_company'        => array(
                 'display'           => '0',
                 'required'          => '0',
-                'default'           => '',
+                'default'           => [],
+                'sort_order'        => '6'
+            ),
+            'field_customer_group'  => array(
+                'display'           => '1',
+                'required'          => '',
+                'default'           => $this->config->get('config_customer_group_id'),
+                'sort_order'        => '7'
+            ),
+            'field_address_1'       => array(
+                'display'           => '1',
+                'required'          => '1',
+                'default'           => [],
+                'sort_order'        => '8'
+            ),
+            'field_address_2'        => array(
+                'display'           => '0',
+                'required'          => '0',
+                'default'           => [],
                 'sort_order'        => '9'
             ),
-            'xd_checkout_field_city'            => array(
+            'field_city'            => array(
                 'display'           => '1',
                 'required'          => '1',
-                'default'           => '',
+                'default'           => [],
                 'sort_order'        => '10'
             ),
-            'xd_checkout_field_postcode'        => array(
-                'display'           => '1',
+            'field_postcode'        => array(
+                'display'           => '0',
                 'required'          => '0',
-                'default'           => '',
+                'default'           => [],
                 'sort_order'        => '11'
             ),
-            'xd_checkout_field_country'        => array(
+            'field_country'         => array(
                 'display'           => '1',
                 'required'          => '1',
-                'default'           => $this->config->get('config_country_id'),
+                'default'           => ($this->config->get('config_country_id')) ?? 0,
                 'sort_order'        => '12'
             ),
-            'xd_checkout_field_zone'            => array(
+            'field_zone'            => array(
                 'display'           => '1',
                 'required'          => '1',
-                'default'           => $this->config->get('config_zone_id'),
+                'default'           => ($this->config->get('config_zone_id')) ?? 0,
                 'sort_order'        => '13'
             ),
-            'xd_checkout_field_newsletter'    => array(
-                'display'           => '1',
+            'field_newsletter'      => array(
+                'display'           => '0',
                 'required'          => '0',
-                'default'           => '1',
-                'sort_order'        => ''
+                'default'           => '0',
+                'sort_order'        => '14'
             ),
-            'xd_checkout_field_register'        => array(
-                'display'           => '1',
+            'field_register'        => array(
+                'display'           => '0',
                 'required'          => '0',
-                'default'           => '',
-                'sort_order'        => ''
+                'default'           => '0',
+                'sort_order'        => '15'
             ),
-            'xd_checkout_field_comment'        => array(
-                'display'           => '1',
+            'field_comment'         => array(
+                'display'           => '0',
                 'required'          => '0',
-                'default'           => '',
-                'sort_order'        => ''
+                'default'           => [],
+                'sort_order'        => '16'
             ),
-            'xd_checkout_coupon'                => '1',
-            'xd_checkout_voucher'               => '1',
-            'xd_checkout_reward'                => '1',
-            'xd_checkout_cart'                  => '1',
-            'xd_checkout_login_module'          => '1',
-            'xd_checkout_html_header'           => array(),
-            'xd_checkout_html_footer'           => array(),
-            'xd_checkout_payment_module'        => '1',
-            'xd_checkout_payment_reload'        => '0',
-            'xd_checkout_payment'               => '1',
-            'xd_checkout_payment_logo'          => array(),
-            'xd_checkout_shipping_module'       => '1',
-            'xd_checkout_shipping'              => '1',
-            'xd_checkout_shipping_reload'       => '0',
-            'xd_checkout_shipping_logo'         => array(),
-            'xd_checkout_survey'                => '0',
-            'xd_checkout_survey_required'       => '0',
-            'xd_checkout_survey_text'           => array(),
-            'xd_checkout_delivery'              => '0',
-            'xd_checkout_delivery_time'         => '0',
-            'xd_checkout_delivery_required'     => '0',
-            'xd_checkout_delivery_unavailable'  => '"2025-10-31", "2025-08-11", "2025-12-25"',
-            'xd_checkout_delivery_min'          => '1',
-            'xd_checkout_delivery_max'          => '30',
-            'xd_checkout_delivery_days_of_week' => ''
+            'coupon_module'         => '0',
+            'voucher_module'        => '0',
+            'reward_module'         => '0',
+            'cart_module'           => '1',
+            'login_module'          => '0',
+            'html_header'           => [],
+            'html_footer'           => [],
+            'payment_module'        => '1',
+            'payment_reload'        => '0',
+            'payment'               => '1',
+            'payment_logo'          => [],
+            'shipping_module'       => '1',
+            'shipping'              => '1',
+            'shipping_reload'       => '0',
+            'shipping_logo'         => [],
+            'survey'                => '0',
+            'survey_required'       => '0',
+            'survey_text'           => [],
+            'delivery'              => '0',
+            'delivery_time'         => '0',
+            'delivery_required'     => '0',
+            'delivery_unavailable'  => '"2025-10-31", "2025-08-11", "2025-12-25"',
+            'delivery_min'          => '1',
+            'delivery_max'          => '30',
+            'delivery_days_of_week' => ''
         );
+
+        // $this->model_setting_setting->editSetting('xd_checkout', $data);
+        $this->model_setting_setting->editSetting('xd_checkout', [
+            'xd_checkout' => $data
+        ]);
+
 
         // Layout
         if (!$this->getLayout()) {
@@ -362,7 +371,8 @@ class ControllerExtensionModuleXdCheckout extends Controller
                 'name'            => 'XD Checkout',
                 'layout_route'    => array(
                     array(
-                        'route'        => 'xd_checkout/checkout'
+                        'route'        => 'xd_checkout/checkout',
+                        'store_id'    => 0,
                     )
                 )
             );
@@ -388,8 +398,11 @@ class ControllerExtensionModuleXdCheckout extends Controller
             $this->model_design_layout->deleteLayout($this->getLayout());
         }
 
-        $this->load->model('setting/event');
+        // Remove default settings
+        $this->load->model('setting/setting');
+        $this->model_setting_setting->deleteSetting('xd_checkout');
 
+        $this->load->model('setting/event');
         $this->model_setting_event->deleteEventByCode('module_xd_checkout');
     }
 
