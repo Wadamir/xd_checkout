@@ -140,7 +140,7 @@ class ControllerExtensionXdCheckoutGuest extends Controller
 
         $data['register'] = $this->load->controller('xd_checkout/register');
 
-        return $this->load->view('xd_checkout/guest', $data);
+        return $this->load->view('extension/xd_checkout/guest', $data);
     }
 
     public function validate()

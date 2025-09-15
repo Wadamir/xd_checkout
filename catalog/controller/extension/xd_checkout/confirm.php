@@ -480,6 +480,6 @@ class ControllerExtensionXdCheckoutConfirm extends Controller
         $data['payment_target'] = html_entity_decode($this->xd_checkout_settings['payment_target'], ENT_QUOTES);
         $data['back'] = $this->url->link('xd_checkout/checkout', '', true);
 
-        $this->response->setOutput($this->load->view('xd_checkout/confirm', $data));
+        $this->response->setOutput($this->load->view('extension/xd_checkout/confirm', $data));
     }
 }

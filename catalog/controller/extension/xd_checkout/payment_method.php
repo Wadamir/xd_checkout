@@ -232,7 +232,7 @@ class ControllerExtensionXdCheckoutPaymentMethod extends Controller
         // $data['language_id'] = $xd_checkout_settings['language_id'];
         $data['language_id'] = (int)$this->config->get('config_language_id');
 
-        $this->response->setOutput($this->load->view('xd_checkout/payment_method', $data));
+        $this->response->setOutput($this->load->view('extension/xd_checkout/payment_method', $data));
     }
 
     public function set()

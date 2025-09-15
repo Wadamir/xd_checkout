@@ -137,7 +137,7 @@ class ControllerExtensionXdCheckoutPaymentAddress extends Controller
             $data['fields_address']['field_' . $field] = $field_data;
         }
 
-        return $this->load->view('xd_checkout/payment_address', $data);
+        return $this->load->view('extension/xd_checkout/payment_address', $data);
     }
 
     public function validate()

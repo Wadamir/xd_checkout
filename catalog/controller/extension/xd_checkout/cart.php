@@ -203,8 +203,8 @@ class ControllerExtensionXdCheckoutCart extends Controller
 
         $data['edit_cart'] = isset($this->xd_checkout_settings['edit_cart']) ? $this->xd_checkout_settings['edit_cart'] : 0;
 
-        // return $this->load->view('xd_checkout/cart', $data);
-        $this->response->setOutput($this->load->view('xd_checkout/cart', $data));
+        // return $this->load->view('extension/xd_checkout/cart', $data);
+        $this->response->setOutput($this->load->view('extension/xd_checkout/cart', $data));
     }
 
     public function update()

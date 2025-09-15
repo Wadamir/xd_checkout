@@ -217,7 +217,7 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
         $data['footer'] = $this->load->controller('common/footer');
         $data['header'] = $this->load->controller('common/header');
 
-        $this->response->setOutput($this->load->view('xd_checkout/checkout', $data));
+        $this->response->setOutput($this->load->view('extension/xd_checkout/checkout', $data));
     }
 
     public function country()

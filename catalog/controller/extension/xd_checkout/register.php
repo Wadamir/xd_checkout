@@ -38,7 +38,7 @@ class ControllerExtensionXdCheckoutRegister extends Controller
         // All variables
         $data['field_newsletter'] = $xd_checkout_settings['field_newsletter'];
 
-        return $this->load->view('xd_checkout/register', $data);
+        return $this->load->view('extension/xd_checkout/register', $data);
     }
 
     public function validate()

@@ -105,7 +105,7 @@ class ControllerExtensionXdCheckoutShippingAddress extends Controller
 
         $data['fields'] = $fields;
 
-        return $this->load->view('xd_checkout/shipping_address', $data);
+        return $this->load->view('extension/xd_checkout/shipping_address', $data);
     }
 
     public function validate()
