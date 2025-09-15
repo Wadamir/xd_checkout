@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutVoucher extends Controller
+class ControllerExtensionXdCheckoutVoucher extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -40,7 +40,7 @@ class ControllerCheckoutXdCheckoutVoucher extends Controller
         $data['coupon_module'] = $xd_checkout_settings['coupon_module'];
         $data['reward_module'] = $xd_checkout_settings['reward_module'];
 
-        return $this->load->view('checkout/xd_checkout/voucher', $data);
+        return $this->load->view('extension/xd_checkout/voucher', $data);
     }
 
     public function validateCoupon()

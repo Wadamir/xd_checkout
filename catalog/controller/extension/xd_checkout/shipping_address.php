@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutShippingAddress extends Controller
+class ControllerExtensionXdCheckoutShippingAddress extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -105,7 +105,7 @@ class ControllerCheckoutXdCheckoutShippingAddress extends Controller
 
         $data['fields'] = $fields;
 
-        return $this->load->view('checkout/xd_checkout/shipping_address', $data);
+        return $this->load->view('extension/xd_checkout/shipping_address', $data);
     }
 
     public function validate()

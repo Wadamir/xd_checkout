@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutLogin extends Controller
+class ControllerExtensionXdCheckoutLogin extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -19,7 +19,7 @@ class ControllerCheckoutXdCheckoutLogin extends Controller
 
         $data['forgotten'] = $this->url->link('account/forgotten', '', true);
 
-        return $this->load->view('checkout/xd_checkout/login', $data);
+        return $this->load->view('extension/xd_checkout/login', $data);
     }
 
     public function validate()

@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutTerms extends Controller
+class ControllerExtensionXdCheckoutTerms extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -42,7 +42,7 @@ class ControllerCheckoutXdCheckoutTerms extends Controller
             $data['button_continue'] = $proceed_button_text[$this->config->get('config_language_id')];
         }
 
-        return $this->load->view('checkout/xd_checkout/terms', $data);
+        return $this->load->view('extension/xd_checkout/terms', $data);
     }
 
     public function validate()

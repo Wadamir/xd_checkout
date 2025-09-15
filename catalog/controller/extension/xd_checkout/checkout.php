@@ -17,16 +17,16 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
 
     public function index()
     {
-        $this->document->addScript('catalog/view/javascript/jquery/xd_checkout.js');
+        $this->document->addScript('catalog/view/javascript/jquery/xd_checkout/xd_checkout.js');
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
         if ($xd_checkout_settings['load_screen']) {
-            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout.block.js');
+            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout/xd_checkout.block.js');
         }
 
         if ($xd_checkout_settings['countdown']) {
-            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout.countdown.js');
+            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout/xd_checkout.countdown.js');
         }
 
         $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout.css');
@@ -194,21 +194,21 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
         $data['confirmation_page'] = $xd_checkout_settings['confirmation_page'];
 
         if (!$this->customer->isLogged()) {
-            $data['guest'] = $this->load->controller('xd_checkout/guest');
-            // $data['guest_shipping'] = $this->load->controller('xd_checkout/guest_shipping');
+            $data['guest'] = $this->load->controller('extension/xd_checkout/guest');
+            // $data['guest_shipping'] = $this->load->controller('extension/xd_checkout/guest_shipping');
 
             if ($xd_checkout_settings['login_module']) {
-                $data['login'] = $this->load->controller('xd_checkout/login');
+                $data['login'] = $this->load->controller('extension/xd_checkout/login');
             }
         }
 
-        $data['payment_address'] = $this->load->controller('xd_checkout/payment_address');
-        // $data['shipping_address'] = $this->load->controller('xd_checkout/shipping_address');
+        $data['payment_address'] = $this->load->controller('extension/xd_checkout/payment_address');
+        // $data['shipping_address'] = $this->load->controller('extension/xd_checkout/shipping_address');
 
 
-        $data['cart'] = $this->load->controller('xd_checkout/cart');
-        $data['voucher'] = $this->load->controller('xd_checkout/voucher');
-        $data['terms'] = $this->load->controller('xd_checkout/terms');
+        $data['cart'] = $this->load->controller('extension/xd_checkout/cart');
+        $data['voucher'] = $this->load->controller('extension/xd_checkout/voucher');
+        $data['terms'] = $this->load->controller('extension/xd_checkout/terms');
 
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['column_right'] = $this->load->controller('common/column_right');
@@ -216,6 +216,8 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
         $data['content_bottom'] = $this->load->controller('common/content_bottom');
         $data['footer'] = $this->load->controller('common/footer');
         $data['header'] = $this->load->controller('common/header');
+        var_dump($data);
+        // die;
 
         $this->response->setOutput($this->load->view('extension/xd_checkout/checkout', $data));
     }

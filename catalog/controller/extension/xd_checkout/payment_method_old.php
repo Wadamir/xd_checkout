@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutPaymentMethod extends Controller
+class ControllerExtensionXdCheckoutPaymentMethod extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -231,7 +231,7 @@ class ControllerCheckoutXdCheckoutPaymentMethod extends Controller
         $data['payment_reload'] = $xd_checkout_settings['payment_reload'];
         $data['language_id'] = $xd_checkout_settings['language_id'];
 
-        $this->response->setOutput($this->load->view('checkout/xd_checkout/payment_method', $data));
+        $this->response->setOutput($this->load->view('extension/xd_checkout/payment_method', $data));
     }
 
     public function set()

@@ -1,5 +1,5 @@
 <?php
-class ControllerCheckoutXdCheckoutGuestShipping extends Controller
+class ControllerExtensionXdCheckoutGuestShipping extends Controller
 {
     // Property to store config for all methods
     private $xd_checkout_settings = [];
@@ -139,7 +139,7 @@ class ControllerCheckoutXdCheckoutGuestShipping extends Controller
 
         $data['fields'] = $fields;
 
-        $this->response->setOutput($this->load->view('checkout/xd_checkout/guest_shipping', $data));
+        $this->response->setOutput($this->load->view('extension/xd_checkout/guest_shipping', $data));
     }
 
     public function validate()
