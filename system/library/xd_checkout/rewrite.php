@@ -23,11 +23,11 @@ class Rewrite
         if (!$debug && !empty($this->config)) {
             // Only replace if not already rewritten
             // if (strpos($url, 'xd_checkout/cart') === false) {
-            //     $url = str_replace('checkout/cart', 'xd_checkout/checkout', $url);
+            //     $url = str_replace('checkout/cart', 'extension/xd_checkout/checkout', $url);
             // }
 
             if (strpos($url, 'xd_checkout/checkout') === false) {
-                $url = str_replace('checkout/checkout', 'xd_checkout/checkout', $url);
+                $url = str_replace('checkout/checkout', 'extension/xd_checkout/checkout', $url);
             }
         }
 

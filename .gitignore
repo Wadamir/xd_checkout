@@ -55,18 +55,23 @@
 !/catalog/
 /catalog/controller/*
 !/catalog/controller/
-
-!/catalog/controller/xd_checkout/
+/catalog/controller/extension/*
+!/catalog/controller/extension/
+!/catalog/controller/extension/xd_checkout/
 
 /catalog/language/*
 !/catalog/language/
 /catalog/language/en-gb/*
 !/catalog/language/en-gb/
-!/catalog/language/en-gb/xd_checkout/
+/catalog/language/en-gb/extension/*
+!/catalog/language/en-gb/extension/
+!/catalog/language/en-gb/extension/xd_checkout/
 
 /catalog/language/ru-ru/*
 !/catalog/language/ru-ru/
-!/catalog/language/ru-ru/xd_checkout/
+/catalog/language/ru-ru/extension/*
+!/catalog/language/ru-ru/extension/
+!/catalog/language/ru-ru/extension/xd_checkout/
 
 /catalog/view/*
 !/catalog/view/
@@ -90,7 +95,9 @@
 
 /catalog/view/theme/default/template/*
 !/catalog/view/theme/default/template/
-!/catalog/view/theme/default/template/xd_checkout/
+/catalog/view/theme/default/template/extension/*
+!/catalog/view/theme/default/template/extension/
+!/catalog/view/theme/default/template/extension/xd_checkout/
 
 
 /system/*
