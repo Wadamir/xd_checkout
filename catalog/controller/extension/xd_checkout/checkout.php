@@ -17,16 +17,16 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
 
     public function index()
     {
-        $this->document->addScript('catalog/view/javascript/jquery/xd_xd_checkout.js');
+        $this->document->addScript('catalog/view/javascript/jquery/xd_checkout.js');
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
         if ($xd_checkout_settings['load_screen']) {
-            $this->document->addScript('catalog/view/javascript/jquery/xd_xd_checkout.block.js');
+            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout.block.js');
         }
 
         if ($xd_checkout_settings['countdown']) {
-            $this->document->addScript('catalog/view/javascript/jquery/xd_xd_checkout.countdown.js');
+            $this->document->addScript('catalog/view/javascript/jquery/xd_checkout.countdown.js');
         }
 
         $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout.css');
