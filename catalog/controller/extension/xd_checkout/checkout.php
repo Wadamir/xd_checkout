@@ -216,7 +216,7 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
         $data['content_bottom'] = $this->load->controller('common/content_bottom');
         $data['footer'] = $this->load->controller('common/footer');
         $data['header'] = $this->load->controller('common/header');
-        var_dump($data);
+        // var_dump($data);
         // die;
 
         $this->response->setOutput($this->load->view('extension/xd_checkout/checkout', $data));

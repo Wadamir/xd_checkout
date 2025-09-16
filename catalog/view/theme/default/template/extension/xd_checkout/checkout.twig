@@ -41,23 +41,13 @@
 			<div id="xd_checkout-main" class="row">
                 <!-- Left column -->
                 <div class="col-12 col-md-6">
-                    <!-- Login -->
-                    {% if not logged and login_module %}
-                        <div id="login-box" class="xd_checkout-block active">
-                            <div id="checkout">
-                                <div class="xd_checkout-heading">
-                                    {{ text_checkout_option }}
-                                </div>
-                                <div class="xd_checkout-content">{{ login }}</div>
-                            </div>
-                            <div class="or">{{ text_or }}</div>
-                        </div>
-                    {% endif %}
-
                     <!-- Guest -->
                     <div id="guest" class="xd_checkout-block active">
                         <div class="xd_checkout-heading">
-                            {{ text_checkout_account }}
+                            <span>{{ text_checkout_account }}</span>
+                            {% if not logged and login_module %}
+                                <button type="button" class="btn btn-link" data-toggle="modal" data-target="#loginModal">{{ text_have_login }}</button>
+                            {% endif %}
                         </div>
                         <div class="xd_checkout-content">                    
                             {{ guest ? guest }}
@@ -146,6 +136,23 @@
 		{{ column_right }}
 	</div><!-- /row -->
 </div><!-- /container -->
+<!-- Login -->
+{% if not logged and login_module %}
+<!-- Custom Modal -->
+<div class="modal fade modal-custom" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">{{ text_checkout_option }}</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				{{ login }}
+			</div>
+		</div>
+	</div>
+</div>
+{% endif %}
 
 {% if custom_css %}
     <style type="text/css">
@@ -191,7 +198,7 @@
 	// Save form data
 	$(document).on('change', '#payment-address input[type=\'text\'], #payment-address select', function() {
 		$.ajax({
-			url: 'index.php?route=xd_checkout/checkout/save&type=payment',
+			url: 'index.php?route=extension/xd_checkout/checkout/save&type=payment',
 			type: 'post',
 			data: $('#payment-address input[type=\'text\'], #payment-address input[type=\'password\'], #payment-address input[type=\'checkbox\']:checked, #payment-address input[type=\'radio\']:checked, #payment-address input[type=\'hidden\'], #payment-address select, #payment-address textarea'),
 			dataType: 'json',
@@ -209,7 +216,7 @@
 
 	$(document).on('change', '#shipping-address input[type=\'text\'], #shipping-address select', function() {
 		$.ajax({
-			url: 'index.php?route=xd_checkout/checkout/save&type=shipping',
+			url: 'index.php?route=extension/xd_checkout/checkout/save&type=shipping',
 			type: 'post',
 			data: $('#shipping-address input[type=\'text\'], #shipping-address input[type=\'password\'], #shipping-address input[type=\'checkbox\']:checked, #shipping-address input[type=\'radio\']:checked, #shipping-address input[type=\'hidden\'], #shipping-address select, #shipping-address textarea'),
 			dataType: 'json',
@@ -228,48 +235,70 @@
 	
 	{% if login_module %} 
         // Login Form Clicked
-        $(document).on('click', '#button-login', function() {
-            $.ajax({
-                url: 'index.php?route=xd_checkout/login/validate',
-                type: 'post',
-                data: $('#checkout #login :input'),
-                dataType: 'json',
-                cache: false,
-                beforeSend: function() {
-                    $('#button-login').prop('disabled', true);
-                    $('#button-login').button('loading');
-                },
-                complete: function() {
-                    $('#button-login').prop('disabled', false);
-                    $('#button-login').button('reset');
-                },
-                success: function(json) {
-                    $('.alert').remove();
+        function login() {
+            console.log('Login clicked');
 
-                    if (json['redirect']) {
-                        location = json['redirect'];
-                    } else if (json['error']) {
-                        $('#warning-messages').prepend('<div class="alert alert-danger" style="display: none;"><i class="fa fa-exclamation-circle"></i> ' + json['error']['warning'] + '</div>');
-                        
-                        $('html, body').animate({ scrollTop: 0 }, 'slow');
-                        
-                        $('.alert-danger').fadeIn('slow');
+            const loginEl = document.getElementById('login');
+            if (!loginEl) return;
+
+            const form = loginEl.querySelector('#login-form');
+            if (!form) return;
+
+            const loginButton = loginEl.querySelector('#button-login');
+            if (!loginButton) return;
+
+            const formData = new FormData(form);
+
+            // Disable button and show loading
+            loginButton.disabled = true;
+            const originalText = loginButton.innerHTML;
+            loginButton.innerHTML = '{{ text_loading }}';
+
+            fetch('index.php?route=extension/xd_checkout/login/validate', {
+                method: 'POST',
+                body: formData,
+                cache: 'no-store'
+            })
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+
+                // Remove old alerts
+                loginEl.querySelectorAll('.alert').forEach(el => el.remove());
+
+                if (json.redirect) {
+                    window.location.href = json.redirect;
+                } else if (json.error && json.error.warning) {
+                    const warningContainer = loginEl.querySelector('#warning-messages');
+                    if (warningContainer) {
+                        const alert = document.createElement('div');
+                        alert.className = 'alert alert-danger';
+                        alert.innerHTML = '<i class="fa fa-exclamation-circle"></i> ' + json.error.warning;
+                        warningContainer.prepend(alert);
+
+                        // Scroll to top
+                        // window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
-                },
-                {% if debug %} 
-                error: function(xhr, ajaxOptions, thrownError) {
-                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
                 }
-                {% endif %} 
+            })
+            .catch(error => {
+                {% if debug %}
+                    alert(error);
+                {% endif %}
+            })
+            .finally(() => {
+                // Enable button back
+                loginButton.disabled = false;
+                loginButton.innerHTML = originalText;
             });
-        });
+        }
 	{% endif %} 
 
     // Validate Register
     function validateRegister() {
         console.log('Validate Register');
         $.ajax({
-            url: 'index.php?route=xd_checkout/register/validate',
+            url: 'index.php?route=extension/xd_checkout/register/validate',
             type: 'post',
             data: $('#payment-address input[type=\'text\'], #payment-address input[type=\'password\'], #payment-address input[type=\'checkbox\']:checked, #payment-address input[type=\'radio\']:checked, #payment-address input[type=\'hidden\'], #payment-address select, #payment-address textarea'),
             dataType: 'json',
@@ -358,7 +387,7 @@
         });
         console.log('Form data for validation:', Array.from(formData.entries()));   
 
-        fetch("index.php?route=xd_checkout/guest/validate", {
+        fetch("index.php?route=extension/xd_checkout/guest/validate", {
             method: "POST",
             body: formData,
             cache: "no-cache"
@@ -462,7 +491,7 @@
     // Validate Guest Shipping Address
     function validateGuestShippingAddress() {
         $.ajax({
-            url: 'index.php?route=xd_checkout/guest_shipping/validate',
+            url: 'index.php?route=extension/xd_checkout/guest_shipping/validate',
             type: 'post',
             data: $('#shipping-address input[type=\'text\'], #shipping-address input[type=\'checkbox\']:checked, #shipping-address input[type=\'radio\']:checked, #shipping-address select, #shipping-address textarea'),
             dataType: 'json',
@@ -531,7 +560,7 @@
     // Validate Payment Address
     function validatePaymentAddress() {
         $.ajax({
-            url: 'index.php?route=xd_checkout/payment_address/validate',
+            url: 'index.php?route=extension/xd_checkout/payment_address/validate',
             type: 'post',
             data: $('#payment-address input[type=\'text\'], #payment-address input[type=\'password\'], #payment-address input[type=\'checkbox\']:checked, #payment-address input[type=\'radio\']:checked, #payment-address input[type=\'hidden\'], #payment-address select, #payment-address textarea'),
             dataType: 'json',
@@ -594,7 +623,7 @@
         // Validate Shipping Address
         function validateShippingAddress() {
             $.ajax({
-                url: 'index.php?route=xd_checkout/shipping_address/validate',
+                url: 'index.php?route=extension/xd_checkout/shipping_address/validate',
                 type: 'post',
                 data: $('#shipping-address input[type=\'text\'], #shipping-address input[type=\'password\'], #shipping-address input[type=\'checkbox\']:checked, #shipping-address input[type=\'radio\']:checked, #shipping-address select, #shipping-address textarea'),
                 dataType: 'json',
@@ -664,7 +693,7 @@
 // Payment Method
 function reloadPaymentMethod() {
 	$.ajax({
-		url: 'index.php?route=xd_checkout/payment_method',
+		url: 'index.php?route=extension/xd_checkout/payment_method',
 		type: 'post',
 		data: $('#payment-address input[type=\'text\'], #payment-address input[type=\'checkbox\']:checked, #payment-address input[type=\'radio\']:checked, #payment-address input[type=\'hidden\'], #payment-address select, #payment-address textarea, #payment-method input[type=\'text\'], #payment-method input[type=\'checkbox\']:checked, #payment-method input[type=\'radio\']:checked, #payment-method input[type=\'hidden\'], #payment-method select, #payment-method textarea'),
 		dataType: 'html',
@@ -691,7 +720,7 @@ function reloadPaymentMethod() {
 
 function reloadPaymentMethodById(address_id) {
 	$.ajax({
-		url: 'index.php?route=xd_checkout/payment_method&address_id=' + address_id,
+		url: 'index.php?route=extension/xd_checkout/payment_method&address_id=' + address_id,
 		type: 'post',
 		data: $('#payment-method input[type=\'checkbox\']:checked, #payment-method input[type=\'radio\']:checked, #payment-method input[type=\'hidden\'], #payment-method select, #payment-method textarea'),
 		dataType: 'html',
@@ -720,7 +749,7 @@ function reloadPaymentMethodById(address_id) {
 function validatePaymentMethod() {
     console.log('Validate Payment Method');
 	$.ajax({
-		url: 'index.php?route=xd_checkout/payment_method/validate',
+		url: 'index.php?route=extension/xd_checkout/payment_method/validate',
 		type: 'post',
 		data: $('#payment-method select, #payment-method input[type=\'radio\']:checked, #payment-method input[type=\'checkbox\']:checked, #payment-method textarea'),
 		dataType: 'json',
@@ -767,7 +796,7 @@ function validatePaymentMethod() {
 		}
 		
 		$.ajax({
-			url: 'index.php?route=xd_checkout/shipping_method',
+			url: 'index.php?route=extension/xd_checkout/shipping_method',
 			type: 'post',
 			data: post_data,
 			dataType: 'html',
@@ -790,7 +819,7 @@ function validatePaymentMethod() {
 
 	function reloadShippingMethodById(address_id) {
 		$.ajax({
-			url: 'index.php?route=xd_checkout/shipping_method&address_id=' + address_id,
+			url: 'index.php?route=extension/xd_checkout/shipping_method&address_id=' + address_id,
 			type: 'post',
 			data: $('#shipping-method input[type=\'text\'], #shipping-method input[type=\'checkbox\']:checked, #shipping-method input[type=\'radio\']:checked, #shipping-method input[type=\'hidden\'], #shipping-method select, #shipping-method textarea'),
 			dataType: 'html',
@@ -815,7 +844,7 @@ function validatePaymentMethod() {
 	function validateShippingMethod() {
         console.log('Validate Shipping Method');
 		$.ajax({
-			url: 'index.php?route=xd_checkout/shipping_method/validate',
+			url: 'index.php?route=extension/xd_checkout/shipping_method/validate',
 			type: 'post',
 			data: $('#shipping-method select, #shipping-method input[type=\'radio\']:checked, #shipping-method textarea, #shipping-method input[type=\'text\']'),
 			dataType: 'json',
@@ -856,7 +885,7 @@ function validatePaymentMethod() {
 function validateTerms() {
     console.log('Validate Terms');
 	$.ajax({
-		url: 'index.php?route=xd_checkout/terms/validate',
+		url: 'index.php?route=extension/xd_checkout/terms/validate',
 		type: 'post',
 		data: $('#terms input[type=\'checkbox\']:checked'),
 		dataType: 'json',
@@ -897,7 +926,7 @@ function validateTerms() {
 function loadConfirm() {
     console.log('Load Confirm');
 	$.ajax({
-		url: 'index.php?route=xd_checkout/confirm',
+		url: 'index.php?route=extension/xd_checkout/confirm',
 		dataType: 'html',
 		cache: false,
 		beforeSend: function() {
@@ -1004,7 +1033,7 @@ function loadConfirm() {
     function loadCart(step = 0) {
         console.log('function loadCart | step: ' + step);
         $.ajax({
-            url: 'index.php?route=xd_checkout/cart&step=' + step,
+            url: 'index.php?route=extension/xd_checkout/cart&step=' + step,
             dataType: 'html',
             cache: false,
             beforeSend: function() {
@@ -1035,7 +1064,7 @@ function loadConfirm() {
     // Validate Coupon
     $(document).on('click', '#button-coupon', function() {
         $.ajax({
-            url: 'index.php?route=xd_checkout/voucher/validateCoupon',
+            url: 'index.php?route=extension/xd_checkout/voucher/validateCoupon',
             type: 'post',
             data: $('#coupon-content :input'),
             dataType: 'json',
@@ -1108,7 +1137,7 @@ function loadConfirm() {
 
     $(document).on('click', '#button-voucher', function() {
         $.ajax({
-            url: 'index.php?route=xd_checkout/voucher/validateVoucher',
+            url: 'index.php?route=extension/xd_checkout/voucher/validateVoucher',
             type: 'post',
             data: $('#voucher-content :input'),
             dataType: 'json',
@@ -1181,7 +1210,7 @@ function loadConfirm() {
 
     $(document).on('click', '#button-reward', function() {
         $.ajax({
-            url: 'index.php?route=xd_checkout/voucher/validateReward',
+            url: 'index.php?route=extension/xd_checkout/voucher/validateReward',
             type: 'post',
             data: $('#reward-content :input'),
             dataType: 'json',
@@ -1356,9 +1385,9 @@ $('.datetime').datetimepicker();
 
         if (curSection && toShowSection) {
             let validationUrls = {
-                'guest': 'index.php?route=xd_checkout/guest/validate',
-                'address_shipping-method': 'index.php?route=xd_checkout/payment_address/validate',
-                'payment_method': 'index.php?route=xd_checkout/payment_method/validate',
+                'guest': 'index.php?route=extension/xd_checkout/guest/validate',
+                'address_shipping-method': 'index.php?route=extension/xd_checkout/payment_address/validate',
+                'payment_method': 'index.php?route=extension/xd_checkout/payment_method/validate',
             };
             if (validation && validationUrls[curSection.id]) {
                 let formData = new FormData();
@@ -1559,7 +1588,7 @@ $('.datetime').datetimepicker();
         if (!countrySelect || !zoneSelect) return;
 
         countrySelect.addEventListener('change', function() {
-            var url = 'index.php?route=xd_checkout/checkout/country&country_id=' + this.value;
+            var url = 'index.php?route=extension/xd_checkout/checkout/country&country_id=' + this.value;
             var spinner = document.createElement('i');
             spinner.className = 'fa fa-spinner fa-spin';
             this.parentNode.appendChild(spinner);

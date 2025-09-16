@@ -15,7 +15,7 @@ class ControllerExtensionXdCheckoutVoucher extends Controller
     public function index()
     {
         $data = $this->load->language('checkout/checkout');
-        $data = array_merge($data, $this->load->language('checkout/xd_checkout/checkout'));
+        $data = array_merge($data, $this->load->language('extension/xd_checkout/checkout'));
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
@@ -46,7 +46,7 @@ class ControllerExtensionXdCheckoutVoucher extends Controller
     public function validateCoupon()
     {
         $this->load->language('checkout/checkout');
-        $this->load->language('checkout/xd_checkout/checkout');
+        $this->load->language('extension/xd_checkout/checkout');
 
         $json = array();
 
@@ -82,7 +82,7 @@ class ControllerExtensionXdCheckoutVoucher extends Controller
     public function validateVoucher()
     {
         $this->load->language('checkout/checkout');
-        $this->load->language('checkout/xd_checkout/checkout');
+        $this->load->language('extension/xd_checkout/checkout');
 
         $json = array();
 
@@ -118,7 +118,7 @@ class ControllerExtensionXdCheckoutVoucher extends Controller
     public function validateReward()
     {
         $this->load->language('checkout/checkout');
-        $this->load->language('checkout/xd_checkout/checkout');
+        $this->load->language('extension/xd_checkout/checkout');
 
         $points = $this->customer->getRewardPoints();
 

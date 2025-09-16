@@ -66,6 +66,7 @@ $_['error_comment']                     = 'Warning: Order comment is required.';
 
 
 // Guest
+$_['text_have_login']                           = 'Already have an account?';
 $_['text_show_shipping']                        = 'Choose shipping method';
 $_['text_show_personal']                        = 'Back to personal details';
 $_['text_checkout_address_shipping_method']     = 'Shipping address & Method';

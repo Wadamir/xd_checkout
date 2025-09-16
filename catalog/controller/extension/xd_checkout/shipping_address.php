@@ -15,7 +15,7 @@ class ControllerExtensionXdCheckoutShippingAddress extends Controller
     public function index()
     {
         $data = $this->load->language('checkout/checkout');
-        $data = array_merge($data, $this->load->language('checkout/xd_checkout/checkout'));
+        $data = array_merge($data, $this->load->language('extension/xd_checkout/checkout'));
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
@@ -111,7 +111,7 @@ class ControllerExtensionXdCheckoutShippingAddress extends Controller
     public function validate()
     {
         $this->load->language('checkout/checkout');
-        $this->load->language('checkout/xd_checkout/checkout');
+        $this->load->language('extension/xd_checkout/checkout');
 
         $xd_checkout_settings = $this->xd_checkout_settings;
 
