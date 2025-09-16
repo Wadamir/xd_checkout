@@ -35,7 +35,6 @@ class ControllerExtensionXdCheckoutGuest extends Controller
                 }
             }
         }
-        // var_dump($data['customer_groups']); // Debug line, can be removed later
 
         if (isset($this->session->data['guest']['customer_group_id'])) {
             $data['customer_group_id'] = $this->session->data['guest']['customer_group_id'];

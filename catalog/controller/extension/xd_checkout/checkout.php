@@ -200,6 +200,8 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
             if ($xd_checkout_settings['login_module']) {
                 $data['login'] = $this->load->controller('extension/xd_checkout/login');
             }
+        } else {
+            $data['guest'] = $this->load->controller('extension/xd_checkout/guest');
         }
 
         $data['payment_address'] = $this->load->controller('extension/xd_checkout/payment_address');
