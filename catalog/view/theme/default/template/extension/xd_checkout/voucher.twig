@@ -1,59 +1,45 @@
 {% if coupon_module %}
-<div id="coupon-heading"><i class="fa fa-ticket"></i> {{ entry_coupon }}</div>
-<div id="coupon-content">
-  <div class="input-group">
-	<input type="text" name="coupon" value="" class="form-control" />
-	<span class="input-group-btn">
-	  <button type="button" id="button-coupon" class="btn btn-primary">{{ text_use_coupon }}</button>
-	</span>
-  </div>
-</div>
+    <div id="coupon-content" class="form-group">
+        <div class="input-group">
+            <input type="text" name="coupon" value="" class="form-control" placeholder="{{ entry_coupon_placeholder }}" />
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-primary" id="button-coupon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </span>
+        </div>
+    </div>
 {% endif %}
-{% if voucher_module %} 
-<div id="voucher-heading"><i class="fa fa-gift"></i> {{ entry_voucher }}</div>
-<div id="voucher-content">
-  <div class="input-group">
-	<input type="text" name="voucher" value="" class="form-control" />
-	<span class="input-group-btn">
-	  <button type="button" id="button-voucher" class="btn btn-primary">{{ text_use_voucher }}</button>
-	</span>
-  </div>
-</div>
+
+{% if voucher_module %}
+    <div id="voucher-content" class="form-group">
+        <div class="input-group">
+            <input type="text" name="voucher" value="" class="form-control" placeholder="{{ entry_voucher_placeholder }}" />
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-primary" id="button-voucher">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </span>
+        </div>
+    </div>
 {% endif %}
-{% if reward_module and reward %} 
-<div id="reward-heading"><i class="fa fa-star"></i> {{ entry_reward }}</div>
-<div id="reward-content">
-  <div class="input-group">
-	<input type="text" name="reward" value="" class="form-control" />
-	<span class="input-group-btn">
-	  <button type="button" id="button-reward" class="btn btn-primary">{{ text_use_reward }}</button>
-	</span>
-  </div>
-</div>
-{% endif %} 
 
-<script type="text/javascript"><!--
-$('#coupon-heading').on('click', function() {
-    if($('#coupon-content').is(':visible')){
-      $('#coupon-content').slideUp('slow');
-    } else {
-      $('#coupon-content').slideDown('slow');
-    };
-});
-
-$('#voucher-heading').on('click', function() {
-    if($('#voucher-content').is(':visible')){
-      $('#voucher-content').slideUp('slow');
-    } else {
-      $('#voucher-content').slideDown('slow');
-    };
-});
-
-$('#reward-heading').on('click', function() {
-    if($('#reward-content').is(':visible')){
-      $('#reward-content').slideUp('slow');
-    } else {
-      $('#reward-content').slideDown('slow');
-    };
-});
-//--></script>
+{% if reward_module and reward %}
+    <div id="reward-content" class="form-group">
+        <div class="input-group">
+            <input type="text" name="reward" value="" class="form-control" placeholder="{{ entry_reward_placeholder }}" />
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-primary" id="button-reward">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </span>
+        </div>
+    </div>
+{% endif %}
+<br />

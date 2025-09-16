@@ -52,16 +52,11 @@ class ControllerExtensionXdCheckoutCart extends Controller
             }
             $data['step'] = $step;
 
-            $total_ext = array();
-            $total_ext[] = 'sub_total';
-            $total_ext[] = 'total';
-
-            if ($step !== 0) {
-                $total_ext[] = 'shipping';
-            }
-
             foreach ($results as $result) {
-                if ($this->config->get('total_' . $result['code'] . '_status') && in_array($result['code'], $total_ext)) {
+                if ($this->config->get('total_' . $result['code'] . '_status')) {
+                    if ($step === 0 && $result['code'] == 'shipping') {
+                        continue;
+                    }
                     $this->load->model('extension/total/' . $result['code']);
 
                     $this->{'model_extension_total_' . $result['code']}->getTotal($total_data);

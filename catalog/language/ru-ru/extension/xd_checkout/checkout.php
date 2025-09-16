@@ -75,3 +75,8 @@ $_['text_checkout_payment_method']          = 'Способ оплаты';
 $_['text_show_address']                     = 'Вернуться к адресу доставки';
 $_['button_finish']                         = 'Оформить заказ';
 $_['button_continue']                       = 'Продолжить';
+
+
+$_['entry_coupon_placeholder']           = 'Купон';
+$_['entry_voucher_placeholder']          = 'Подарочный сертификат';
+$_['entry_reward_placeholder']           = 'Бонусные баллы';

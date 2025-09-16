@@ -123,7 +123,7 @@
     margin-bottom: 20px;
 }
 
-#cart1 {
+#totals-slip {
     padding: 16px;
     margin-bottom: 16px;
     background-color: #fff;
@@ -308,7 +308,7 @@ table.xd_checkout-cart {
 }
 
 
-
+/*
 #voucher-heading,
 #coupon-heading,
 #reward-heading {
@@ -341,13 +341,18 @@ table.xd_checkout-cart {
 #reward-heading .fa {
     display: none;
 }
-
+*/
 #xd_checkoutconfirm .terms label {
     margin-right: 8px;
 }
 
 #payment {
     overflow: hidden;
+}
+
+
+.input-group-btn>.btn {
+    padding: 6px 12px;
 }
 
 /* Responsive view */

@@ -104,19 +104,18 @@
                 <!-- Right column -->
                 <div class="col-12 col-md-6">
                     <!-- Cart + Discounts -->
-                    <div class="totals-slip">
-                        {% if cart_module %}
-                            <div id="cart1" class="xd_checkout-block-active">
-                                <div class="xd_checkout-heading">
-                                    {{ text_checkout_cart }}
-                                </div>
-                                <div class="xd_checkout-content cart-content">{{ cart }}</div>
-                            </div>
-                        {% endif %}
-
+                    <div id="totals-slip">
+                        <div class="xd_checkout-heading">
+                            {{ text_checkout_cart }}
+                        </div>                    
                         {% if voucher_module or coupon_module or reward_module %}
                             <div id="voucher">
                                 <div>{{ voucher }}</div>
+                            </div>
+                        {% endif %}                    
+                        {% if cart_module %}
+                            <div id="cart1">
+                                <div class="xd_checkout-content cart-content">{{ cart }}</div>
                             </div>
                         {% endif %}
                     </div>
@@ -275,9 +274,6 @@
                         alert.className = 'alert alert-danger';
                         alert.innerHTML = '<i class="fa fa-exclamation-circle"></i> ' + json.error.warning;
                         warningContainer.prepend(alert);
-
-                        // Scroll to top
-                        // window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 }
             })
@@ -1103,7 +1099,7 @@ function loadConfirm() {
                         reloadPaymentMethod();
                         
                         {% if shipping_required %} 
-                        reloadShippingMethod('shipping');
+                            reloadShippingMethod('shipping');
                         {% endif %} 
                     }
                 {% else %}   
@@ -1122,10 +1118,8 @@ function loadConfirm() {
                     {% endif %} 
                 {% endif %} 
                 
-                {% if not shipping_required %} 
-                    console.log('Document ready - loadCart (2)');
-                    loadCart();
-                {% endif %} 
+                console.log('button-coupon - success - loadCart (2)');
+                loadCart();
             },
             {% if debug %} 
             error: function(xhr, ajaxOptions, thrownError) {
@@ -1195,10 +1189,8 @@ function loadConfirm() {
                     {% endif %} 
                 {% endif %}
                 
-                {% if not shipping_required %} 
-                    console.log('Document ready - loadCart (3)');
-                    loadCart();
-                {% endif %} 
+                console.log('button-voucher - success - loadCart (3)');
+                loadCart();
             },
             {% if debug %} 
             error: function(xhr, ajaxOptions, thrownError) {
@@ -1268,10 +1260,8 @@ function loadConfirm() {
                     {% endif %} 
                 {% endif %}
                 
-                {% if not shipping_required %} 
-                    console.log('Document ready - loadCart (4)');
-                    loadCart();
-                {% endif %} 
+                console.log('button-reward - success - loadCart (4)');
+                loadCart();
             },
             {% if debug %} 
             error: function(xhr, ajaxOptions, thrownError) {
