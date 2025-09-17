@@ -3,32 +3,38 @@
         <!-- Products -->
         {% for product in products %}
             <div class="xd_checkout-row">
-                <div class="xd_checkout-cell image">
-                    {% if product.thumb %}
-                        <a href="{{ product.href }}">
-                            <img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}"/>
-                        </a>
-                    {% endif %}
-                </div>
-                <div class="xd_checkout-cell name">
-                    <a href="{{ product.href }}">{{ product.name }}</a>
-                    <div>
-                        {% for option in product.option %}
-                            <small>{{ option.name }}: {{ option.value }}</small>
-                        {% endfor %}
-                        {% if product.reward %}
-                            <small>{{ product.reward }}</small>
-                        {% endif %}
-                        {% if product.recurring %}
-                            <span class="label label-info">{{ text_recurring_item }}</span>
-                            <small>{{ product.recurring }}</small>
+                <div class="xd_checkout-cell_group">
+                    <div class="xd_checkout-cell image">
+                        {% if product.thumb %}
+                            <a href="{{ product.href }}">
+                                <img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}"/>
+                            </a>
                         {% endif %}
                     </div>
+                    <div class="xd_checkout-cell_vertical">
+                        <div class="xd_checkout-cell name">
+                            <a href="{{ product.href }}">{{ product.name }}</a>
+                            <div>
+                                {% for option in product.option %}
+                                    <small>{{ option.name }}: {{ option.value }}</small>
+                                {% endfor %}
+                                {% if product.reward %}
+                                    <small>{{ product.reward }}</small>
+                                {% endif %}
+                                {% if product.recurring %}
+                                    <span class="label label-info">{{ text_recurring_item }}</span>
+                                    <small>{{ product.recurring }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="xd_checkout-cell_horizontal">
+                            <div class="xd_checkout-cell quantity">
+                                {{ product.price }}&nbsp;x&nbsp;{{ product.quantity }}
+                            </div>
+                            <div class="xd_checkout-cell total text-right">{{ product.total }}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="xd_checkout-cell quantity">
-                    {{ product.price }}&nbsp;x&nbsp;{{ product.quantity }}
-                </div>
-                <div class="xd_checkout-cell total text-right">{{ product.total }}</div>
             </div>
         {% endfor %}
 

@@ -39,6 +39,26 @@
 
 			<!-- Checkout main block -->
 			<div id="xd_checkout-main" class="row">
+                <!-- Right column -->
+                <div class="col-12 col-md-6">
+                    <!-- Cart + Discounts -->
+                    <div id="totals-slip">
+                        <div class="xd_checkout-heading">
+                            {{ text_checkout_cart }}
+                        </div>                    
+                        {% if voucher_module or coupon_module or reward_module %}
+                            <div id="voucher">
+                                <div>{{ voucher }}</div>
+                            </div>
+                        {% endif %}                    
+                        {% if cart_module %}
+                            <div id="cart1">
+                                <div class="xd_checkout-content cart-content">{{ cart }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Right column end -->            
                 <!-- Left column -->
                 <div class="col-12 col-md-6">
                     <!-- Guest -->
@@ -100,27 +120,6 @@
                     <div id="payment" class="text-left" style="display:none;"></div>
                 </div>
                 <!-- Left column end -->
-
-                <!-- Right column -->
-                <div class="col-12 col-md-6">
-                    <!-- Cart + Discounts -->
-                    <div id="totals-slip">
-                        <div class="xd_checkout-heading">
-                            {{ text_checkout_cart }}
-                        </div>                    
-                        {% if voucher_module or coupon_module or reward_module %}
-                            <div id="voucher">
-                                <div>{{ voucher }}</div>
-                            </div>
-                        {% endif %}                    
-                        {% if cart_module %}
-                            <div id="cart1">
-                                <div class="xd_checkout-content cart-content">{{ cart }}</div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-                <!-- Right column end -->
             </div>
             <!-- Checkout main block end -->
 
