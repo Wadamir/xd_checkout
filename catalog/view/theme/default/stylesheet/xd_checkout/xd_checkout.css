@@ -60,6 +60,11 @@
     display: none !important;
 }
 
+.wait_block {
+    margin: 0;
+    padding: 0;
+}
+
 #payment-address .xd_checkout-content,
 #shipping-address .xd_checkout-content,
 #login-box .xd_checkout-content {

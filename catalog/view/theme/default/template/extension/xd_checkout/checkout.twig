@@ -171,20 +171,50 @@
 
 {% if load_screen %} 
     $(document).ready(function() {
-        $.blockUI({
-            message: '<h1 style="color:#ffffff;">{{ text_please_wait }}</h1>',
-            css: {
-                border: 'none',
-                padding: '15px',
-                backgroundColor: '#000000',
-                '-webkit-border-radius': '10px',
-                '-moz-border-radius': '10px',
-                '-khtml-border-radius': '10px',
-                'border-radius': '10px',
-                opacity: .8,
-                color: '#ffffff'
-            }
-        });
+        let windowWidth = $(window).width();
+        let windowHeight = $(window).height();
+        if (windowWidth < 768) {
+            $.blockUI({
+                message: '<h2 class="wait_block text-center">{{ text_please_wait }}</h2>',
+                css: {
+                    border: 'none',
+                    padding: '24px',
+                    backgroundColor: '#000000',
+                    '-webkit-border-radius': '12px',
+                    '-moz-border-radius': '12px',
+                    '-khtml-border-radius': '12px',
+                    'border-radius': '12px',
+                    opacity: .8,
+                    color: '#ffffff',
+                    top: '50%',
+                    left: '10%',
+                    width: '80%',
+                    transform: 'translateY(-50%)',
+                    '-ms-transform': 'translateY(-50%)',
+                    '-webkit-transform': 'translateY(-50%)',
+
+                }
+            })
+        } else {
+            $.blockUI({
+                message: '<h2 class="wait_block text-center">{{ text_please_wait }}</h2>',
+                css: {
+                    border: 'none',
+                    padding: '24px',
+                    backgroundColor: '#000000',
+                    '-webkit-border-radius': '12px',
+                    '-moz-border-radius': '12px',
+                    '-khtml-border-radius': '12px',
+                    'border-radius': '12px',
+                    opacity: .8,
+                    color: '#ffffff',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    '-ms-transform': 'translateY(-50%)',
+                    '-webkit-transform': 'translateY(-50%)',                    
+                }
+            })
+        }
 
         setTimeout(function() {
             $.unblockUI();
@@ -703,7 +733,7 @@ function reloadPaymentMethod() {
 			$('#payment-method .xd_checkout-content').html(html);
 			
 			{% if load_screen %} 
-			$.unblockUI();
+                $.unblockUI();
 			{% endif %} 
 		},
 		{% if debug %} 
@@ -730,7 +760,7 @@ function reloadPaymentMethodById(address_id) {
 			$('#payment-method .xd_checkout-content').html(html);
 			
 			{% if load_screen %} 
-			$.unblockUI();
+                $.unblockUI();
 			{% endif %} 
 		},
 		{% if debug %} 
@@ -936,20 +966,50 @@ function loadConfirm() {
 				{% endif %} 
 			
 				{% if load_screen %} 
-                    $.blockUI({
-                        message: '<h1 style="color:#ffffff;">{{ text_please_wait }}</h1>',
-                        css: {
-                            border: 'none',
-                            padding: '15px',
-                            backgroundColor: '#000000',
-                            '-webkit-border-radius': '10px',
-                            '-moz-border-radius': '10px',
-                            '-khtml-border-radius': '10px',
-                            'border-radius': '10px',
-                            opacity: .8,
-                            color: '#ffffff'
-                        }
-                    });
+                    let windowWidth = $(window).width();
+                    let windowHeight = $(window).height();
+                    if (windowWidth < 768) {
+                        $.blockUI({
+                            message: '<h2 class="wait_block text-center">{{ text_please_wait }}</h2>',
+                            css: {
+                                border: 'none',
+                                padding: '24px',
+                                backgroundColor: '#000000',
+                                '-webkit-border-radius': '12px',
+                                '-moz-border-radius': '12px',
+                                '-khtml-border-radius': '12px',
+                                'border-radius': '12px',
+                                opacity: .8,
+                                color: '#ffffff',
+                                top: '50%',
+                                left: '10%',
+                                width: '80%',
+                                transform: 'translateY(-50%)',
+                                '-ms-transform': 'translateY(-50%)',
+                                '-webkit-transform': 'translateY(-50%)',
+
+                            }
+                        })
+                    } else {
+                        $.blockUI({
+                            message: '<h2 class="wait_block text-center">{{ text_please_wait }}</h2>',
+                            css: {
+                                border: 'none',
+                                padding: '24px',
+                                backgroundColor: '#000000',
+                                '-webkit-border-radius': '12px',
+                                '-moz-border-radius': '12px',
+                                '-khtml-border-radius': '12px',
+                                'border-radius': '12px',
+                                opacity: .8,
+                                color: '#ffffff',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                '-ms-transform': 'translateY(-50%)',
+                                '-webkit-transform': 'translateY(-50%)',                    
+                            }
+                        })
+                    }
 				{% endif %} 
 			{% endif %}
 		},
