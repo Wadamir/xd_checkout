@@ -182,6 +182,10 @@ class ControllerExtensionXdCheckoutCart extends Controller
             );
         }
 
+        $img_size = $this->getCartImageSize();
+        $data['img_width'] = $img_size['width'];
+        $data['img_height'] = $img_size['height'];
+
         // Gift Voucher
         $data['vouchers'] = array();
 
@@ -290,5 +294,29 @@ class ControllerExtensionXdCheckoutCart extends Controller
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+
+    private function getCartImageSize()
+    {
+        // Get current theme
+        $theme = $this->config->get('config_theme');
+        // Fallback for older OC versions
+        if (!$theme) {
+            $theme = $this->config->get('theme_default_directory');
+        }
+
+        $width  = (int)$this->config->get('theme_' . $theme . '_image_cart_width');
+        $height = (int)$this->config->get('theme_' . $theme . '_image_cart_height');
+
+        // Default fallback if not set
+        if (!$width || !$height) {
+            $width  = 50;
+            $height = 50;
+        }
+
+        return [
+            'width'  => $width,
+            'height' => $height
+        ];
     }
 }

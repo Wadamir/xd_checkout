@@ -4,14 +4,14 @@
         {% for product in products %}
             <div class="xd_checkout-row">
                 <div class="xd_checkout-cell_group">
-                    <div class="xd_checkout-cell image">
+                    <div class="xd_checkout-cell image" style="max-width: {{ img_width }}px;">
                         {% if product.thumb %}
                             <a href="{{ product.href }}">
                                 <img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}"/>
                             </a>
                         {% endif %}
                     </div>
-                    <div class="xd_checkout-cell_vertical">
+                    <div class="xd_checkout-cell_vertical" style="width: calc(100% - {{ img_width }}px - 12px);">
                         <div class="xd_checkout-cell name">
                             <a href="{{ product.href }}">{{ product.name }}</a>
                             <div>
