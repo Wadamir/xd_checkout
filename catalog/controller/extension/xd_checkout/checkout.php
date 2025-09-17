@@ -29,19 +29,19 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
             $this->document->addScript('catalog/view/javascript/jquery/xd_checkout/xd_checkout.countdown.js');
         }
 
-        $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout.css');
+        $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout/xd_checkout.css');
 
-        $data['column_layout'] = isset($xd_checkout_settings['layout']) ? $xd_checkout_settings['layout'] : '';
+        // $data['column_layout'] = isset($xd_checkout_settings['layout']) ? $xd_checkout_settings['layout'] : '';
 
-        if ($data['column_layout'] == '1') {
-            $stylesheet = 'one';
-        } elseif ($data['column_layout'] == '2') {
-            $stylesheet = 'two';
-        } else {
-            $stylesheet = 'three';
-        }
+        // if ($data['column_layout'] == '1') {
+        //     $stylesheet = 'one';
+        // } elseif ($data['column_layout'] == '2') {
+        //     $stylesheet = 'two';
+        // } else {
+        //     $stylesheet = 'three';
+        // }
 
-        $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout_' . $stylesheet . '.css');
+        // $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout/xd_checkout_' . $stylesheet . '.css');
 
         if (!$xd_checkout_settings['debug'] || !isset($this->request->get['debug'])) {
             if (!$xd_checkout_settings['status']) {
@@ -80,7 +80,7 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
             }
         }
 
-        $data = array_merge($data, $this->load->language('checkout/checkout'));
+        $data = $this->load->language('checkout/checkout');
         $data = array_merge($data, $this->load->language('extension/xd_checkout/checkout'));
 
         // Validate minimum order total

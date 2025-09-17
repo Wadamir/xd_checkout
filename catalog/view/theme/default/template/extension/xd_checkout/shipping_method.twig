@@ -1,11 +1,11 @@
 <div id="shipping_method-data">
     {% if shipping_methods %}
         {% if shipping %}
-            <div class="shipping-methods w-100">
+            <div class="methods w-100">
                 {% for key, shipping_method in shipping_methods %}
                     {% if not shipping_method.error %}
                         {% for quote in shipping_method.quote %}
-                            <div class="shipping-method form-group">
+                            <div class="method form-group">
                                 {% if quote.code == code %}
                                     <input type="radio" name="shipping_method" value="{{ quote.code }}" id="{{ quote.code }}" checked="checked" />
                                 {% else %}
@@ -15,13 +15,13 @@
                                     {% if shipping_logo[key] %}
                                         <img src="{{ shipping_logo[key] }}" alt="{{ shipping_method.title }}" title="{{ shipping_method.title }}" />
                                     {% endif %}
-                                    <div class="shipping-title">{{ quote.title }}</div>
-                                    <div class="shipping-price">{{ quote.text }}</div>
+                                    <div class="method-title">{{ quote.title }}</div>
+                                    <div class="method-price">{{ quote.text }}</div>
                                 </label>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <div class="shipping-error">
+                        <div class="method-error">
                             {{ shipping_method.error }}
                         </div>
                     {% endif %}

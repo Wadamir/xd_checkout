@@ -8,40 +8,38 @@
 </div> 
 {% if payment_methods %}
     <p>{{ text_payment_method }}</p>
-    {% if payment %}
-        <table class="table">
-            {% for payment_method in payment_methods %}
-                <tr>
-                    <td>
-                        {% if payment_method.code == code %}
-                            <input type="radio" name="payment_method" value="{{ payment_method.code }}" id="{{ payment_method.code }}" checked="checked" />
-                        {% else %}
-                            <input type="radio" name="payment_method" value="{{ payment_method.code }}" id="{{ payment_method.code }}" />
-                        {% endif %}
-                    </td>
-                    <td style="width:100%; padding-left:10px;">
-                        <label for="{{ payment_method.code }}">
-                            {% if payment_logo[payment_method.code] %}
-                                <img src="{{ payment_logo[payment_method.code] }}" alt="{{ payment_method.title }}" />
-                            {% endif %}
-                            {{ payment_method.title }}
-                        </label>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <select name="payment_method" class="form-control form-group">
-            {% for payment_method in payment_methods %}
-                {% if payment_method.code == code %}
-                    <option value="{{ payment_method.code }}" selected="selected">
-                {% else %}
-                    <option value="{{ payment_method.code }}">
-                {% endif %}
-                {{ payment_method.title }}</option>
-            {% endfor %}
-        </select>
-    {% endif %}
+	{% if payment %}
+		<div class="methods w-100">
+			{% for payment_method in payment_methods %}
+				<div class="method form-group">
+					{% if payment_method.code == code %}
+						<input type="radio" name="payment_method" value="{{ payment_method.code }}" id="{{ payment_method.code }}" checked="checked" />
+					{% else %}
+						<input type="radio" name="payment_method" value="{{ payment_method.code }}" id="{{ payment_method.code }}" />
+					{% endif %}
+					<label for="{{ payment_method.code }}">
+						{% if payment_logo[payment_method.code] %}
+							<img src="{{ payment_logo[payment_method.code] }}" alt="{{ payment_method.title }}" title="{{ payment_method.title }}" />
+						{% endif %}
+						<div class="method-title">{{ payment_method.title }}</div>
+					</label>
+				</div>
+			{% endfor %}
+		</div>
+	{% else %}
+		<select class="form-control" name="payment_method">
+			{% for payment_method in payment_methods %}
+				{% if payment_method.code == code %}
+					<option value="{{ payment_method.code }}" selected="selected">
+				{% else %}
+					<option value="{{ payment_method.code }}">
+				{% endif %}
+					{{ payment_method.title }}
+				</option>
+			{% endfor %}
+		</select>
+		<br />
+	{% endif %}
 {% endif %}
 
 {% if survey_survey %}
