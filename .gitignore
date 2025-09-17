@@ -88,10 +88,7 @@
 !/catalog/view/theme/default/
 /catalog/view/theme/default/stylesheet/*
 !/catalog/view/theme/default/stylesheet/
-!/catalog/view/theme/default/stylesheet/xd_checkout.css
-!/catalog/view/theme/default/stylesheet/xd_checkout_one.css
-!/catalog/view/theme/default/stylesheet/xd_checkout_two.css
-!/catalog/view/theme/default/stylesheet/xd_checkout_three.css
+!/catalog/view/theme/default/stylesheet/xd_checkout/
 
 /catalog/view/theme/default/template/*
 !/catalog/view/theme/default/template/
