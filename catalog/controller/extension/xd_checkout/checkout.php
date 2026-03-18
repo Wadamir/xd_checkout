@@ -159,7 +159,7 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
 
         // All variables
         $data['logged'] = $this->customer->isLogged();
-        var_dump($data['logged']);
+        // var_dump($data['logged']);
         $data['shipping_required'] = $this->cart->hasShipping();
         $data['load_screen'] = $xd_checkout_settings['load_screen'] ? true : false;
         $data['loading_display'] = $xd_checkout_settings['loading_display'] ?? 0;
@@ -207,8 +207,6 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
         $data['content_bottom'] = $this->load->controller('common/content_bottom');
         $data['footer'] = $this->load->controller('common/footer');
         $data['header'] = $this->load->controller('common/header');
-        // var_dump($data);
-        // die;
 
         $this->response->setOutput($this->load->view('extension/xd_checkout/checkout', $data));
     }
