@@ -9,6 +9,7 @@ class ControllerExtensionModuleXdCheckout extends Controller
     protected $purchase_url = 'xd-checkout';
     protected $purchase_id = '7382';
     protected $error = array();
+    protected $uploadCitiesDebugLogFile = 'xd_checkout.log';
 
     public function index()
     {
@@ -97,6 +98,8 @@ class ControllerExtensionModuleXdCheckout extends Controller
         $data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
 
         $data['user_token'] = $this->session->data['user_token'];
+        $data['upload_cities_init'] = $this->url->link('extension/module/xd_checkout/uploadCitiesInit', 'user_token=' . $this->session->data['user_token'], true);
+        $data['upload_cities_batch'] = $this->url->link('extension/module/xd_checkout/uploadCitiesBatch', 'user_token=' . $this->session->data['user_token'], true);
 
         $xd_checkout = $this->config->get('xd_checkout');
 
@@ -227,6 +230,9 @@ class ControllerExtensionModuleXdCheckout extends Controller
             'status'                => '0',
             'minimum_order'         => '0',
             'debug'                 => '0',
+            'cdek_client_id'        => '',
+            'cdek_client_secret'    => '',
+            'cdek_api_environment'  => 'prod',
             'confirmation_page'     => '1',
             'save_data'             => '0',
             'edit_cart'             => '0',
@@ -362,6 +368,9 @@ class ControllerExtensionModuleXdCheckout extends Controller
             'xd_checkout' => $data
         ]);
 
+        $this->load->model('extension/module/xd_checkout');
+        $this->model_extension_module_xd_checkout->ensureCitiesTable();
+
 
         // Layout
         if (!$this->getLayout()) {
@@ -424,5 +433,648 @@ class ControllerExtensionModuleXdCheckout extends Controller
         }
 
         return !$this->error;
+    }
+
+    // Upload Cities
+    public function uploadCitiesInit()
+    {
+        $this->load->language('extension/module/xd_checkout');
+        $this->prepareUploadCitiesRuntime();
+
+        $json = $this->getDefaultUploadResponse();
+        $this->writeUploadCitiesDebug('uploadCitiesInit:start');
+
+        if (!$this->validateUploadCitiesRequest()) {
+            $json['error'] = $this->language->get('error_permission');
+            $this->writeUploadCitiesDebug('uploadCitiesInit:permission_denied');
+            return $this->sendJson($json);
+        }
+
+        $country_codes = $this->getUploadCountryCodesFromRequest();
+
+        if (!$country_codes) {
+            $json['error'] = $this->language->get('text_upload_cities_country_required');
+            $this->writeUploadCitiesDebug('uploadCitiesInit:no_countries_selected');
+            return $this->sendJson($json);
+        }
+
+        $background_api_requested = !empty($this->request->post['use_api_refresh']);
+
+        $cities = $this->readLocalCdekCitiesFile($error_message);
+
+        if ($cities === false) {
+            $json['error'] = $error_message;
+            $this->writeUploadCitiesDebug('uploadCitiesInit:read_failed', array(
+                'error' => $json['error']
+            ));
+            return $this->sendJson($json);
+        }
+
+        $cities = $this->filterCitiesByCountryCodes($cities, $country_codes);
+
+        if (!$cities) {
+            if ($background_api_requested) {
+                $json['success'] = true;
+                $json['total'] = 0;
+                $json['processed'] = 0;
+                $json['inserted'] = 0;
+                $json['next_offset'] = 0;
+                $json['done'] = true;
+                $json['message'] = $this->language->get('text_upload_cities_no_rows_api_start');
+
+                $this->writeUploadCitiesDebug('uploadCitiesInit:no_rows_after_filter_start_api', array(
+                    'country_codes' => $country_codes
+                ));
+
+                $this->sendJson($json);
+
+                if ($this->detachClientConnection()) {
+                    $this->runBackgroundApiCitiesRefresh($country_codes);
+                    exit;
+                }
+
+                $this->writeUploadCitiesDebug('backgroundSync:skip_detach_unavailable');
+                return;
+            }
+
+            $json['success'] = true;
+            $json['total'] = 0;
+            $json['processed'] = 0;
+            $json['inserted'] = 0;
+            $json['next_offset'] = 0;
+            $json['done'] = true;
+            $json['message'] = $this->language->get('text_upload_cities_no_rows_recommend_api');
+
+            $this->writeUploadCitiesDebug('uploadCitiesInit:no_rows_after_filter_recommend_api', array(
+                'country_codes' => $country_codes
+            ));
+
+            return $this->sendJson($json);
+        } else {
+            $this->writeUploadCitiesDebug('uploadCitiesInit:rows_after_filter', array(
+                'country_codes' => $country_codes,
+                'rows_count' => count($cities)
+            ));
+        }
+
+        $this->load->model('extension/module/xd_checkout');
+        $this->model_extension_module_xd_checkout->ensureCitiesTable();
+        $this->model_extension_module_xd_checkout->truncateCities();
+
+        $this->session->data['xd_checkout_upload_cities_country_codes'] = $country_codes;
+        $this->session->data['xd_checkout_upload_cities_use_api_refresh'] = $background_api_requested ? 1 : 0;
+
+        $json['success'] = true;
+        $json['total'] = count($cities);
+        $json['processed'] = 0;
+        $json['inserted'] = 0;
+        $json['next_offset'] = 0;
+        $json['done'] = false;
+        $json['message'] = $this->language->get('text_upload_cities_uploading');
+
+        $this->writeUploadCitiesDebug('uploadCitiesInit:success', array(
+            'total' => $json['total'],
+            'background_sync_planned' => $background_api_requested ? 1 : 0,
+            'country_codes' => $country_codes
+        ));
+
+        return $this->sendJson($json);
+    }
+
+    public function uploadCitiesBatch()
+    {
+        $this->load->language('extension/module/xd_checkout');
+        $this->prepareUploadCitiesRuntime();
+
+        $json = $this->getDefaultUploadResponse();
+
+        if (!$this->validateUploadCitiesRequest()) {
+            $json['error'] = $this->language->get('error_permission');
+            $this->writeUploadCitiesDebug('uploadCitiesBatch:permission_denied');
+            return $this->sendJson($json);
+        }
+
+        $country_codes = $this->getUploadCountryCodesFromRequest();
+
+        if (!$country_codes && isset($this->session->data['xd_checkout_upload_cities_country_codes']) && is_array($this->session->data['xd_checkout_upload_cities_country_codes'])) {
+            $country_codes = $this->getUploadCountryCodesFromArray($this->session->data['xd_checkout_upload_cities_country_codes']);
+        }
+
+        if (!$country_codes) {
+            $json['error'] = $this->language->get('text_upload_cities_country_required');
+            $this->writeUploadCitiesDebug('uploadCitiesBatch:no_countries_selected');
+            return $this->sendJson($json);
+        }
+
+        $background_api_requested = isset($this->request->post['use_api_refresh'])
+            ? !empty($this->request->post['use_api_refresh'])
+            : (!empty($this->session->data['xd_checkout_upload_cities_use_api_refresh']));
+
+        $cities = $this->readLocalCdekCitiesFile($error_message);
+
+        if ($cities === false) {
+            $json['error'] = $error_message;
+            $this->writeUploadCitiesDebug('uploadCitiesBatch:read_failed', array(
+                'error' => $json['error']
+            ));
+            return $this->sendJson($json);
+        }
+
+        $cities = $this->filterCitiesByCountryCodes($cities, $country_codes);
+
+        if (!$cities) {
+            $json['error'] = $this->language->get('text_upload_cities_no_rows_for_selected_countries');
+            $this->writeUploadCitiesDebug('uploadCitiesBatch:no_rows_after_filter', array(
+                'country_codes' => $country_codes
+            ));
+            return $this->sendJson($json);
+        }
+
+        $total = count($cities);
+        $offset = isset($this->request->post['offset']) ? (int)$this->request->post['offset'] : (isset($this->request->get['offset']) ? (int)$this->request->get['offset'] : 0);
+        $limit = isset($this->request->post['limit']) ? (int)$this->request->post['limit'] : (isset($this->request->get['limit']) ? (int)$this->request->get['limit'] : 500);
+
+        $offset = max(0, $offset);
+        $limit = max(1, min(2000, $limit));
+
+        // $this->writeUploadCitiesDebug('uploadCitiesBatch:start', array(
+        //     'offset' => $offset,
+        //     'limit' => $limit,
+        //     'total' => $total
+        // ));
+
+        if ($offset >= $total || $total === 0) {
+            $json['success'] = true;
+            $json['total'] = $total;
+            $json['processed'] = $total;
+            $json['inserted'] = 0;
+            $json['next_offset'] = $total;
+            $json['done'] = true;
+            $json['message'] = $background_api_requested
+                ? $this->language->get('text_upload_cities_local_background_sync')
+                : $this->language->get('text_upload_cities_completed');
+
+            unset($this->session->data['xd_checkout_upload_cities_country_codes']);
+            unset($this->session->data['xd_checkout_upload_cities_use_api_refresh']);
+
+            $this->writeUploadCitiesDebug('uploadCitiesBatch:already_done', array(
+                'offset' => $offset,
+                'total' => $total,
+                'country_codes' => $country_codes,
+                'background_sync_planned' => $background_api_requested ? 1 : 0
+            ));
+
+            $this->sendJson($json);
+
+            if ($background_api_requested && $this->detachClientConnection()) {
+                $this->runBackgroundApiCitiesRefresh($country_codes);
+                exit;
+            }
+
+            if ($background_api_requested) {
+                $this->writeUploadCitiesDebug('backgroundSync:skip_detach_unavailable');
+            }
+
+            return;
+        }
+
+        $batch = array_slice($cities, $offset, $limit);
+
+        $this->load->model('extension/module/xd_checkout');
+        $this->model_extension_module_xd_checkout->ensureCitiesTable();
+        $inserted = $this->model_extension_module_xd_checkout->insertCitiesBatch($batch);
+
+        $processed = min($total, $offset + count($batch));
+        $done = ($processed >= $total);
+
+        $json['success'] = true;
+        $json['total'] = $total;
+        $json['processed'] = $processed;
+        $json['inserted'] = $inserted;
+        $json['next_offset'] = $processed;
+        $json['done'] = $done;
+        $json['message'] = $done
+            ? ($background_api_requested ? $this->language->get('text_upload_cities_local_background_sync') : $this->language->get('text_upload_cities_completed'))
+            : $this->language->get('text_upload_cities_uploading');
+
+        if ($done) {
+            unset($this->session->data['xd_checkout_upload_cities_country_codes']);
+            unset($this->session->data['xd_checkout_upload_cities_use_api_refresh']);
+
+            $this->writeUploadCitiesDebug('uploadCitiesBatch:success', array(
+                'processed' => $processed,
+                'total' => $total,
+                'done' => $done,
+                'country_codes' => $country_codes,
+                'background_sync_planned' => $background_api_requested ? 1 : 0
+            ));
+
+            $this->sendJson($json);
+
+            if ($background_api_requested && $this->detachClientConnection()) {
+                $this->runBackgroundApiCitiesRefresh($country_codes);
+                exit;
+            }
+
+            if ($background_api_requested) {
+                $this->writeUploadCitiesDebug('backgroundSync:skip_detach_unavailable');
+            }
+
+            return;
+        }
+
+        return $this->sendJson($json);
+    }
+
+    private function getDefaultUploadResponse()
+    {
+        return array(
+            'success' => false,
+            'error' => '',
+            'message' => '',
+            'total' => 0,
+            'processed' => 0,
+            'inserted' => 0,
+            'next_offset' => 0,
+            'done' => false
+        );
+    }
+
+    private function importCitiesToDatabase($cities, $limit = 1000)
+    {
+        if (!is_array($cities)) {
+            return 0;
+        }
+
+        $this->load->model('extension/module/xd_checkout');
+        $this->model_extension_module_xd_checkout->ensureCitiesTable();
+        $this->model_extension_module_xd_checkout->truncateCities();
+
+        $total = count($cities);
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        $limit = max(1, (int)$limit);
+        $inserted = 0;
+
+        for ($offset = 0; $offset < $total; $offset += $limit) {
+            $batch = array_slice($cities, $offset, $limit);
+
+            if (!$batch) {
+                continue;
+            }
+
+            $inserted += (int)$this->model_extension_module_xd_checkout->insertCitiesBatch($batch);
+        }
+
+        return $inserted;
+    }
+
+    private function runBackgroundApiCitiesRefresh($country_codes = array())
+    {
+        $this->prepareUploadCitiesRuntime();
+
+        $this->writeUploadCitiesDebug('backgroundSync:start', array(
+            'country_codes' => $country_codes
+        ));
+
+        if (!$this->syncCdekCitiesFile($sync_message, $error_message, $country_codes)) {
+            $this->writeUploadCitiesDebug('backgroundSync:sync_failed', array(
+                'error' => $error_message
+            ));
+
+            return;
+        }
+
+        $cities = $this->readLocalCdekCitiesFile($read_error);
+
+        if ($cities === false) {
+            $this->writeUploadCitiesDebug('backgroundSync:read_failed', array(
+                'error' => $read_error
+            ));
+
+            return;
+        }
+
+        $cities = $this->filterCitiesByCountryCodes($cities, $country_codes);
+
+        if (!$cities) {
+            $this->writeUploadCitiesDebug('backgroundSync:no_rows_after_filter', array(
+                'country_codes' => $country_codes
+            ));
+            return;
+        }
+
+        $inserted = $this->importCitiesToDatabase($cities, 1000);
+
+        $this->writeUploadCitiesDebug('backgroundSync:success', array(
+            'total' => count($cities),
+            'inserted' => $inserted,
+            'sync_message' => $sync_message,
+            'country_codes' => $country_codes
+        ));
+    }
+
+    private function detachClientConnection()
+    {
+        ignore_user_abort(true);
+
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+
+        if (function_exists('session_write_close')) {
+            @session_write_close();
+        }
+
+        if (!function_exists('fastcgi_finish_request')) {
+            return false;
+        }
+
+        if (method_exists($this->response, 'output')) {
+            $this->response->output();
+        }
+
+        fastcgi_finish_request();
+
+        return true;
+    }
+
+    private function validateUploadCitiesRequest()
+    {
+        return $this->user->hasPermission('modify', 'extension/module/' . $this->code);
+    }
+
+    private function readCdekCitiesFile(&$error_message = '')
+    {
+        $updater = $this->getCdekCityUpdater();
+        $cities = $updater->readCitiesFile($error_message);
+
+        if ($cities === false) {
+            $prefix = $this->language->get('text_upload_cities_file_unavailable');
+            $error_message = $error_message !== '' ? ($prefix . ': ' . $error_message) : $prefix;
+        }
+
+        return $cities;
+    }
+
+    private function readLocalCdekCitiesFile(&$error_message = '')
+    {
+        $error_message = '';
+        $file = DIR_SYSTEM . 'library/xd_checkout/cdek_city.json';
+
+        if (!is_file($file)) {
+            $error_message = $this->language->get('text_upload_cities_file_unavailable');
+            return false;
+        }
+
+        $content = file_get_contents($file);
+
+        if ($content === false || $content === '') {
+            $error_message = $this->language->get('text_upload_cities_file_unavailable');
+            return false;
+        }
+
+        $cities = json_decode($content, true);
+
+        if (!is_array($cities)) {
+            $error_message = $this->language->get('text_upload_cities_file_unavailable');
+            return false;
+        }
+
+        return $cities;
+    }
+
+    private function syncCdekCitiesFile(&$message = '', &$error_message = '', $country_codes = array())
+    {
+        $updater = $this->getCdekCityUpdater();
+        $result = $updater->syncFromApi($message, $error_message, $country_codes);
+
+        if (!$result && $error_message === '') {
+            $error_message = $this->language->get('text_upload_cities_file_unavailable');
+        }
+
+        // $this->writeUploadCitiesDebug('syncCdekCitiesFile:result', array(
+        //     'success' => $result ? 1 : 0,
+        //     'message' => $message,
+        //     'error' => $error_message,
+        //     'country_codes' => $country_codes
+        // ));
+
+        return $result;
+    }
+
+    private function getUploadCountryCodesFromRequest()
+    {
+        $codes = isset($this->request->post['country_codes']) ? $this->request->post['country_codes'] : array();
+
+        return $this->getUploadCountryCodesFromArray($codes);
+    }
+
+    private function getUploadCountryCodesFromArray($codes)
+    {
+
+        if (!is_array($codes)) {
+            if (is_string($codes) && strpos($codes, ',') !== false) {
+                $codes = preg_split('/\s*,\s*/', $codes, -1, PREG_SPLIT_NO_EMPTY);
+            } else {
+                $codes = array($codes);
+            }
+        }
+
+        $allowed = array(
+            'RU' => true,
+            'BY' => true,
+            'KZ' => true
+        );
+
+        $result = array();
+
+        foreach ($codes as $code) {
+            $code = strtoupper(trim((string)$code));
+
+            if ($code !== '' && isset($allowed[$code])) {
+                $result[$code] = $code;
+            }
+        }
+
+        return array_values($result);
+    }
+
+    private function filterCitiesByCountryCodes($cities, $country_codes)
+    {
+        if (!is_array($cities)) {
+            return array();
+        }
+
+        if (!is_array($country_codes) || !$country_codes) {
+            return $cities;
+        }
+
+        $allowed = array_fill_keys($country_codes, true);
+        $result = array();
+
+        foreach ($cities as $city) {
+            if (!is_array($city)) {
+                continue;
+            }
+
+            $city_country_code = $this->resolveCityCountryCode($city);
+
+            if ($city_country_code !== '' && isset($allowed[$city_country_code])) {
+                $result[] = $city;
+            }
+        }
+
+        return $result;
+    }
+
+    private function resolveCityCountryCode($city)
+    {
+        if (isset($city['countryCode'])) {
+            $code = strtoupper(trim((string)$city['countryCode']));
+
+            if ($code !== '') {
+                return $code;
+            }
+        }
+
+        if (isset($city['country_code'])) {
+            $code = strtoupper(trim((string)$city['country_code']));
+
+            if ($code !== '') {
+                return $code;
+            }
+        }
+
+        if (isset($city['countryName'])) {
+            $code = $this->inferCountryCodeFromText($city['countryName']);
+
+            if ($code !== '') {
+                return $code;
+            }
+        }
+
+        if (isset($city['name'])) {
+            $code = $this->inferCountryCodeFromText($city['name']);
+
+            if ($code !== '') {
+                return $code;
+            }
+        }
+
+        return '';
+    }
+
+    private function inferCountryCodeFromText($value)
+    {
+        $value = trim((string)$value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        $lower = function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
+
+        if (strpos($lower, 'russia') !== false || strpos($lower, 'росс') !== false) {
+            return 'RU';
+        }
+
+        if (strpos($lower, 'belarus') !== false || strpos($lower, 'белар') !== false || strpos($lower, 'белорус') !== false) {
+            return 'BY';
+        }
+
+        if (strpos($lower, 'kazakh') !== false || strpos($lower, 'казах') !== false || strpos($lower, 'казахстан') !== false) {
+            return 'KZ';
+        }
+
+        return '';
+    }
+
+    private function prepareUploadCitiesRuntime()
+    {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
+
+        if (function_exists('ini_set')) {
+            @ini_set('memory_limit', '768M');
+        }
+    }
+
+    private function getCdekCityUpdater()
+    {
+        require_once(DIR_SYSTEM . 'library/xd_checkout/cdek_city_updater.php');
+
+        return new XdCheckoutCdekCityUpdater($this->registry);
+    }
+
+    private function sendJson($json)
+    {
+        $this->response->addHeader('Content-Type: application/json; charset=utf-8');
+
+        $options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
+        if (defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
+            $options |= JSON_INVALID_UTF8_SUBSTITUTE;
+        }
+
+        $payload = json_encode($json, $options);
+
+        if ($payload === false) {
+            $fallback = array(
+                'success' => false,
+                'error' => 'JSON encode failed: ' . json_last_error_msg(),
+                'message' => '',
+                'total' => 0,
+                'processed' => 0,
+                'inserted' => 0,
+                'next_offset' => 0,
+                'done' => true
+            );
+
+            $this->writeUploadCitiesDebug('sendJson:encode_failed', array(
+                'json_error' => json_last_error_msg()
+            ));
+
+            $payload = json_encode($fallback);
+        }
+
+        $this->response->setOutput($payload);
+    }
+
+    private function isUploadCitiesDebugEnabled()
+    {
+        $settings = $this->config->get('xd_checkout');
+
+        if (!is_array($settings) || !isset($settings['debug'])) {
+            return false;
+        }
+
+        return !empty($settings['debug']);
+    }
+
+    private function writeUploadCitiesDebug($event, $context = array())
+    {
+        if (!$this->isUploadCitiesDebugEnabled()) {
+            return;
+        }
+
+        static $logger = null;
+
+        if ($logger === null) {
+            $logger = new Log($this->uploadCitiesDebugLogFile);
+        }
+
+        $line = '[xd_checkout][cities_import][' . $event . ']';
+
+        if ($context) {
+            $json = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $line .= ' ' . ($json !== false ? $json : 'context_encode_failed');
+        }
+
+        $logger->write($line);
     }
 }

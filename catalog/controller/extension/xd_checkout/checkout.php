@@ -31,18 +31,6 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
 
         $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout/xd_checkout.css');
 
-        // $data['column_layout'] = isset($xd_checkout_settings['layout']) ? $xd_checkout_settings['layout'] : '';
-
-        // if ($data['column_layout'] == '1') {
-        //     $stylesheet = 'one';
-        // } elseif ($data['column_layout'] == '2') {
-        //     $stylesheet = 'two';
-        // } else {
-        //     $stylesheet = 'three';
-        // }
-
-        // $this->document->addStyle('catalog/view/theme/default/stylesheet/xd_checkout/xd_checkout_' . $stylesheet . '.css');
-
         if (!$xd_checkout_settings['debug'] || !isset($this->request->get['debug'])) {
             if (!$xd_checkout_settings['status']) {
                 $this->response->redirect($this->url->link('checkout/checkout', '', true));
@@ -171,6 +159,7 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
 
         // All variables
         $data['logged'] = $this->customer->isLogged();
+        var_dump($data['logged']);
         $data['shipping_required'] = $this->cart->hasShipping();
         $data['load_screen'] = $xd_checkout_settings['load_screen'] ? true : false;
         $data['loading_display'] = $xd_checkout_settings['loading_display'] ?? 0;
@@ -243,6 +232,13 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
                 $zone_default = $this->session->data['payment_address']['zone_id'];
             }
 
+            $zone_first = 0;
+            $zone_first_query = $this->db->query("SELECT `zone_id` FROM `" . DB_PREFIX . "zone` WHERE `country_id` = '" . (int)$this->request->get['country_id'] . "' AND `status` = '1' ORDER BY `zone_id` ASC LIMIT 1");
+
+            if (!empty($zone_first_query->row['zone_id'])) {
+                $zone_first = (int)$zone_first_query->row['zone_id'];
+            }
+
             $json = array(
                 'country_id'        => $country_info['country_id'],
                 'name'              => $country_info['name'],
@@ -251,8 +247,61 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
                 'address_format'    => $country_info['address_format'],
                 'postcode_required' => $country_info['postcode_required'],
                 'zone'              => $this->model_localisation_zone->getZonesByCountryId($this->request->get['country_id']),
+                'zone_first'        => $zone_first,
                 'zone_default'      => $zone_default,
                 'status'            => $country_info['status']
+            );
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
+
+    public function cityDefault()
+    {
+        $json = array();
+
+        $this->load->model('extension/xd_checkout/city');
+
+        $item = $this->model_extension_xd_checkout_city->getFirstCity(
+            isset($this->request->get['country_id']) ? (int)$this->request->get['country_id'] : 0,
+            isset($this->request->get['zone_id']) ? (int)$this->request->get['zone_id'] : 0
+        );
+
+        if ($item) {
+            $json = array(
+                'value' => (int)$item['city_id'],
+                'label' => (string)$item['label'],
+                'city_name' => (string)$item['city_name'],
+                'zone_id' => (int)$item['zone_id'],
+                'country_id' => (int)$item['country_id']
+            );
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
+
+    public function cityAutocomplete()
+    {
+        $json = array();
+
+        $this->load->model('extension/xd_checkout/city');
+
+        $results = $this->model_extension_xd_checkout_city->searchCities(array(
+            'term' => isset($this->request->get['term']) ? $this->request->get['term'] : '',
+            'country_id' => isset($this->request->get['country_id']) ? (int)$this->request->get['country_id'] : 0,
+            'zone_id' => isset($this->request->get['zone_id']) ? (int)$this->request->get['zone_id'] : 0,
+            'limit' => isset($this->request->get['limit']) ? (int)$this->request->get['limit'] : 12
+        ));
+
+        foreach ($results as $item) {
+            $json[] = array(
+                'value' => (int)$item['city_id'],
+                'label' => (string)$item['label'],
+                'city_name' => (string)$item['city_name'],
+                'zone_id' => (int)$item['zone_id'],
+                'country_id' => (int)$item['country_id']
             );
         }
 
@@ -290,24 +339,28 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
     {
         $json = array();
 
+        $getPostValue = function ($key, $default = '') {
+            return isset($this->request->post[$key]) ? $this->request->post[$key] : $default;
+        };
+
         if (!$this->customer->isLogged() && isset($this->request->get['type'])) {
             if ($this->request->get['type'] == 'payment') {
-                $this->session->data['guest']['firstname'] = $this->request->post['firstname'];
-                $this->session->data['guest']['lastname'] = $this->request->post['lastname'];
-                $this->session->data['guest']['email'] = $this->request->post['email'];
-                $this->session->data['guest']['telephone'] = $this->request->post['telephone'];
+                $this->session->data['guest']['firstname'] = $getPostValue('firstname', isset($this->session->data['guest']['firstname']) ? $this->session->data['guest']['firstname'] : '');
+                $this->session->data['guest']['lastname'] = $getPostValue('lastname', isset($this->session->data['guest']['lastname']) ? $this->session->data['guest']['lastname'] : '');
+                $this->session->data['guest']['email'] = $getPostValue('email', isset($this->session->data['guest']['email']) ? $this->session->data['guest']['email'] : '');
+                $this->session->data['guest']['telephone'] = $getPostValue('telephone', isset($this->session->data['guest']['telephone']) ? $this->session->data['guest']['telephone'] : '');
                 $this->session->data['guest']['shipping_address'] = isset($this->request->post['shipping_address']) ? true : false;
                 $this->session->data['guest']['create_account'] = isset($this->request->post['create_account']) ? true : false;
 
-                $this->session->data['payment_address']['firstname'] = $this->request->post['firstname'];
-                $this->session->data['payment_address']['lastname'] = $this->request->post['lastname'];
-                $this->session->data['payment_address']['company'] = $this->request->post['company'];
-                $this->session->data['payment_address']['address_1'] = $this->request->post['address_1'];
-                $this->session->data['payment_address']['address_2'] = $this->request->post['address_2'];
-                $this->session->data['payment_address']['postcode'] = $this->request->post['postcode'];
-                $this->session->data['payment_address']['city'] = $this->request->post['city'];
-                $this->session->data['payment_address']['country_id'] = $this->request->post['country_id'];
-                $this->session->data['payment_address']['zone_id'] = $this->request->post['zone_id'];
+                $this->session->data['payment_address']['firstname'] = $getPostValue('firstname', isset($this->session->data['payment_address']['firstname']) ? $this->session->data['payment_address']['firstname'] : '');
+                $this->session->data['payment_address']['lastname'] = $getPostValue('lastname', isset($this->session->data['payment_address']['lastname']) ? $this->session->data['payment_address']['lastname'] : '');
+                $this->session->data['payment_address']['company'] = $getPostValue('company', isset($this->session->data['payment_address']['company']) ? $this->session->data['payment_address']['company'] : '');
+                $this->session->data['payment_address']['address_1'] = $getPostValue('address_1', isset($this->session->data['payment_address']['address_1']) ? $this->session->data['payment_address']['address_1'] : '');
+                $this->session->data['payment_address']['address_2'] = $getPostValue('address_2', isset($this->session->data['payment_address']['address_2']) ? $this->session->data['payment_address']['address_2'] : '');
+                $this->session->data['payment_address']['postcode'] = $getPostValue('postcode', isset($this->session->data['payment_address']['postcode']) ? $this->session->data['payment_address']['postcode'] : '');
+                $this->session->data['payment_address']['city'] = $getPostValue('city', isset($this->session->data['payment_address']['city']) ? $this->session->data['payment_address']['city'] : '');
+                $this->session->data['payment_address']['country_id'] = $getPostValue('country_id', isset($this->session->data['payment_address']['country_id']) ? $this->session->data['payment_address']['country_id'] : '');
+                $this->session->data['payment_address']['zone_id'] = $getPostValue('zone_id', isset($this->session->data['payment_address']['zone_id']) ? $this->session->data['payment_address']['zone_id'] : '');
 
                 if (isset($this->request->post['custom_field']['address'])) {
                     $this->session->data['payment_address']['custom_field'] = $this->request->post['custom_field']['address'];
@@ -315,17 +368,17 @@ class ControllerExtensionXdCheckoutCheckout extends Controller
                     $this->session->data['payment_address']['custom_field'] = array();
                 }
             } else {
-                $this->session->data['shipping_address']['firstname'] = $this->request->post['firstname'];
-                $this->session->data['shipping_address']['lastname'] = $this->request->post['lastname'];
-                $this->session->data['shipping_address']['company'] = $this->request->post['company'];
-                $this->session->data['shipping_address']['address_1'] = $this->request->post['address_1'];
-                $this->session->data['shipping_address']['address_2'] = $this->request->post['address_2'];
-                $this->session->data['shipping_address']['postcode'] = $this->request->post['postcode'];
-                $this->session->data['shipping_address']['city'] = $this->request->post['city'];
-                $this->session->data['shipping_address']['country_id'] = $this->request->post['country_id'];
-                $this->session->data['shipping_address']['zone_id'] = $this->request->post['zone_id'];
+                $this->session->data['shipping_address']['firstname'] = $getPostValue('firstname', isset($this->session->data['shipping_address']['firstname']) ? $this->session->data['shipping_address']['firstname'] : '');
+                $this->session->data['shipping_address']['lastname'] = $getPostValue('lastname', isset($this->session->data['shipping_address']['lastname']) ? $this->session->data['shipping_address']['lastname'] : '');
+                $this->session->data['shipping_address']['company'] = $getPostValue('company', isset($this->session->data['shipping_address']['company']) ? $this->session->data['shipping_address']['company'] : '');
+                $this->session->data['shipping_address']['address_1'] = $getPostValue('address_1', isset($this->session->data['shipping_address']['address_1']) ? $this->session->data['shipping_address']['address_1'] : '');
+                $this->session->data['shipping_address']['address_2'] = $getPostValue('address_2', isset($this->session->data['shipping_address']['address_2']) ? $this->session->data['shipping_address']['address_2'] : '');
+                $this->session->data['shipping_address']['postcode'] = $getPostValue('postcode', isset($this->session->data['shipping_address']['postcode']) ? $this->session->data['shipping_address']['postcode'] : '');
+                $this->session->data['shipping_address']['city'] = $getPostValue('city', isset($this->session->data['shipping_address']['city']) ? $this->session->data['shipping_address']['city'] : '');
+                $this->session->data['shipping_address']['country_id'] = $getPostValue('country_id', isset($this->session->data['shipping_address']['country_id']) ? $this->session->data['shipping_address']['country_id'] : '');
+                $this->session->data['shipping_address']['zone_id'] = $getPostValue('zone_id', isset($this->session->data['shipping_address']['zone_id']) ? $this->session->data['shipping_address']['zone_id'] : '');
 
-                if (isset($this->request->post['custom_field'])) {
+                if (isset($this->request->post['custom_field']['address'])) {
                     $this->session->data['shipping_address']['custom_field'] = $this->request->post['custom_field']['address'];
                 } else {
                     $this->session->data['shipping_address']['custom_field'] = array();

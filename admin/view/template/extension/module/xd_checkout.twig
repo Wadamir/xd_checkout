@@ -276,7 +276,46 @@
 										</select>
 									</div>
 								</div>
+							</div>            
+                            <hr />
+							<div class="row">
+								<div class="form-group col-sm-6">
+									<label class="col-sm-4 control-label" for="input-cdek-client-id">
+										{{ entry_cdek_client_id }}
+									</label>
+									<div class="col-sm-8">
+										<input type="text" name="xd_checkout[cdek_client_id]" id="input-cdek-client-id" class="form-control" value="{{ xd_checkout.cdek_client_id|default(xd_checkout.cdek_api_client_id|default('')) }}" autocomplete="off"/>
+									</div>
+								</div>
+								<div class="form-group col-sm-6">
+									<label class="col-sm-4 control-label" for="input-cdek-client-secret">
+										{{ entry_cdek_client_secret }}
+									</label>
+									<div class="col-sm-8">
+										<input type="password" name="xd_checkout[cdek_client_secret]" id="input-cdek-client-secret" class="form-control" value="{{ xd_checkout.cdek_client_secret|default(xd_checkout.cdek_api_client_secret|default('')) }}" autocomplete="new-password"/>
+									</div>
+								</div>                              
 							</div>                            
+							<div class="row">
+								<div class="form-group col-sm-6">
+									<label class="col-sm-4 control-label" for="input-cdek-api-environment">
+										{{ entry_cdek_api_environment }}
+									</label>
+									<div class="col-sm-8">
+										<select name="xd_checkout[cdek_api_environment]" id="input-cdek-api-environment" class="form-control">
+											<option value="prod" {{ xd_checkout.cdek_api_environment|default('prod') == 'prod' ? ' selected="selected"' : '' }}>{{ text_cdek_api_environment_prod }}</option>
+											<option value="test" {{ xd_checkout.cdek_api_environment|default('prod') == 'test' ? ' selected="selected"' : '' }}>{{ text_cdek_api_environment_test }}</option>
+										</select>
+									</div>
+								</div>
+                                <div class="form-group col-sm-6 text-right">
+                                    <div class="col-sm-8 col-sm-offset-4">
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadCitiesModal">
+                                            <i title="{{ entry_upload_cities }}" data-toggle="tooltip" class="fa fa-info-circle fa-lg"></i> {{ entry_upload_cities }}
+                                        </button>
+                                    </div>
+                                </div>                                  
+							</div>                                            
 						</div>
 						<div class="tab-pane" id="tab-design">
 							<div class="row hidden d-none">
@@ -321,7 +360,7 @@
 										<textarea name="xd_checkout[custom_css]" id="input-custom-css" class="form-control" rows="5">{{ xd_checkout.custom_css }}</textarea>
 									</div>
 								</div>
-							</div>
+							</div>                            
 						</div>
 						<div class="tab-pane table-responsive" id="tab-field">
 							<table class="table table-bordered table-hover table-striped">
@@ -950,9 +989,62 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade" id="uploadCitiesModal" tabindex="-1" role="dialog" aria-labelledby="uploadCitiesModalTitle">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="uploadCitiesModalTitle">{{ entry_upload_cities }}</h4>
+            </div>
+            <div class="modal-body">
+				<p class="text-muted">{{ text_upload_cities_country_hint }}</p>
+				<div class="checkbox" style="margin-top: 0;">
+					<label style="margin-right: 16px;">
+						<input type="checkbox" class="upload-cities-country" value="RU" checked="checked"/> {{ text_upload_cities_country_ru }}
+					</label>
+					<label style="margin-right: 16px;">
+						<input type="checkbox" class="upload-cities-country" value="BY" checked="checked"/> {{ text_upload_cities_country_by }}
+					</label>
+					<label>
+						<input type="checkbox" class="upload-cities-country" value="KZ"/> {{ text_upload_cities_country_kz }}
+					</label>
+				</div>
+				<hr style="margin-top: 10px; margin-bottom: 10px;"/>
+				<div class="checkbox" style="margin-top: 0;">
+					<label>
+						<input type="checkbox" id="upload-cities-use-api" value="1"/> {{ text_upload_cities_use_api_label }}
+					</label>
+				</div>
+				<p class="help-block" style="margin-top: 0;">{{ text_upload_cities_use_api_help }}</p>
+				<p id="upload-cities-status" class="text-muted">{{ text_upload_cities_ready }}</p>
+				<div id="upload-cities-progress-wrap" class="progress">
+					<div id="upload-cities-progress" class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="width: 0%;">0%</div>
+                </div>
+				<div id="upload-cities-progress-summary" class="well well-sm" style="margin-bottom: 0;">
+                    {{ text_upload_cities_progress }}: <strong id="upload-cities-current">0</strong> {{ text_upload_cities_out_of }} <strong id="upload-cities-total">0</strong>
+                </div>
+				<p id="upload-cities-background-status" class="help-block hidden" style="margin-top: 8px; margin-bottom: 0;"></p>
+            </div>
+            <div class="modal-footer">
+				<button type="button" id="upload-cities-start" class="btn btn-primary">{{ button_upload_cities_start }}</button>
+				<button type="button" id="upload-cities-close" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 <style type="text/css">
 	.form-group + .form-group {
 		border: none;
+	}
+
+	#upload-cities-status.upload-cities-status-strong,
+	#upload-cities-background-status.upload-cities-status-strong {
+		font-weight: 700;
+		color: #3c763d;
+	}
+
+	#upload-cities-status.upload-cities-status-bold {
+		font-weight: 700;
 	}
 </style>
 <script>
@@ -1071,6 +1163,372 @@
             $('#delivery-time tbody').append(html);
             delivery_time_row++;
         };
+
+        var uploadCitiesInitUrl = '{{ upload_cities_init|replace({'&amp;': '&'}) }}';
+		var uploadCitiesBatchUrl = '{{ upload_cities_batch|replace({'&amp;': '&'}) }}';
+		var uploadCitiesBatchLimit = 1000;
+		var uploadCitiesInProgress = false;
+		var uploadCitiesCancelled = false;
+		var uploadCitiesFinished = false;
+		var uploadCitiesRequest = null;
+		var uploadCitiesSelectedCountries = [];
+		var uploadCitiesUseApiRefresh = false;
+
+		function clearUploadCitiesRequest() {
+			if (uploadCitiesRequest && uploadCitiesRequest.readyState !== 4) {
+				uploadCitiesRequest.abort();
+			}
+
+			uploadCitiesRequest = null;
+		}
+
+		function resetUploadCitiesModal() {
+			clearUploadCitiesRequest();
+			uploadCitiesInProgress = false;
+			uploadCitiesCancelled = false;
+			uploadCitiesFinished = false;
+
+			$('#upload-cities-status').text('{{ text_upload_cities_ready }}');
+			$('#upload-cities-status').removeClass('upload-cities-status-strong upload-cities-status-bold');
+			$('#upload-cities-current').text('0');
+			$('#upload-cities-total').text('0');
+			$('#upload-cities-start').prop('disabled', false);
+			$('#upload-cities-close')
+				.text('{{ button_cancel }}')
+				.removeClass('btn-primary')
+				.addClass('btn-default');
+			$('#upload-cities-background-status').addClass('hidden').removeClass('upload-cities-status-strong').text('');
+			setUploadCitiesProgressVisible(true);
+
+			$('#upload-cities-progress')
+				.removeClass('progress-bar-danger')
+				.addClass('progress-bar-success progress-bar-striped')
+				.attr('aria-valuenow', 0)
+				.css('width', '0%')
+				.text('0%');
+		}
+
+		function setUploadCitiesProgressVisible(isVisible) {
+			$('#upload-cities-progress-wrap').toggleClass('hidden', !isVisible);
+			$('#upload-cities-progress-summary').toggleClass('hidden', !isVisible);
+		}
+
+		function setUploadCitiesBackgroundStatus(message, emphasize) {
+			if (message) {
+				$('#upload-cities-background-status')
+					.removeClass('hidden')
+					.toggleClass('upload-cities-status-strong', !!emphasize)
+					.text(message);
+				return;
+			}
+
+			$('#upload-cities-background-status').addClass('hidden').removeClass('upload-cities-status-strong').text('');
+		}
+
+		function setUploadCitiesProgressPercent(percent) {
+			percent = Math.max(0, Math.min(100, parseInt(percent, 10) || 0));
+
+			$('#upload-cities-progress')
+				.attr('aria-valuenow', percent)
+				.css('width', percent + '%')
+				.text(percent + '%');
+		}
+
+		function getSelectedUploadCountries() {
+			var values = [];
+
+			$('.upload-cities-country:checked').each(function () {
+				values.push($(this).val());
+			});
+
+			return values;
+		}
+
+		function markUploadCitiesCompleted(message, hasError, options) {
+			options = options || {};
+			var displayMessage = message || '{{ text_upload_cities_completed }}';
+			var isCombinedBackgroundMessage = displayMessage === '{{ text_upload_cities_local_background_sync|e('js') }}';
+			var isNoRowsApiStartMessage = displayMessage === '{{ text_upload_cities_no_rows_api_start|e('js') }}';
+			var isNoRowsShortMessage = displayMessage === '{{ text_upload_cities_no_rows_short|e('js') }}';
+			var isNoRowsRecommendMessage = displayMessage === '{{ text_upload_cities_no_rows_recommend_api|e('js') }}';
+			var isNoRowsMessage = isNoRowsApiStartMessage || isNoRowsShortMessage || isNoRowsRecommendMessage;
+			var emphasizeStatus = !!options.emphasizeStatus || isCombinedBackgroundMessage;
+
+			uploadCitiesInProgress = false;
+			uploadCitiesFinished = true;
+			clearUploadCitiesRequest();
+
+			$('#upload-cities-status')
+				.text(displayMessage)
+				.removeClass('upload-cities-status-strong upload-cities-status-bold')
+				.toggleClass('upload-cities-status-strong', emphasizeStatus && !isNoRowsMessage)
+				.toggleClass('upload-cities-status-bold', isNoRowsMessage);
+			$('#upload-cities-start').prop('disabled', !!options.disableStart);
+			$('#upload-cities-close').text('{{ button_upload_cities_close }}');
+			setUploadCitiesProgressVisible(!isNoRowsMessage);
+
+			if (options.closePrimary) {
+				$('#upload-cities-close').removeClass('btn-default').addClass('btn-primary');
+			} else {
+				$('#upload-cities-close').removeClass('btn-primary').addClass('btn-default');
+			}
+
+			setUploadCitiesBackgroundStatus(options.backgroundMessage || '', !!options.emphasizeBackground);
+
+			if (hasError) {
+				$('#upload-cities-progress')
+					.removeClass('progress-bar-success progress-bar-striped active')
+					.addClass('progress-bar-danger')
+					.attr('aria-valuenow', 100)
+					.css('width', '100%')
+					.text('{{ text_upload_cities_error_label }}');
+			} else {
+				$('#upload-cities-progress').removeClass('active');
+			}
+		}
+
+		function setUploadCitiesError(message) {
+			markUploadCitiesCompleted(message, true);
+		}
+
+		function setUploadCitiesValidationError(message) {
+			$('#upload-cities-status').text(message).removeClass('upload-cities-status-strong upload-cities-status-bold');
+			setUploadCitiesBackgroundStatus('');
+			setUploadCitiesProgressVisible(true);
+			$('#upload-cities-progress')
+				.removeClass('progress-bar-success progress-bar-striped active')
+				.addClass('progress-bar-danger')
+				.attr('aria-valuenow', 0)
+				.css('width', '0%')
+				.text('0%');
+		}
+
+		function updateUploadCitiesProgress(current, total) {
+			var percent = total > 0 ? Math.round((current / total) * 100) : 0;
+
+			$('#upload-cities-current').text(current);
+			$('#upload-cities-total').text(total);
+			$('#upload-cities-progress')
+				.attr('aria-valuenow', percent)
+				.css('width', percent + '%')
+				.text(percent + '%');
+		}
+
+		function finishUploadCities(message) {
+			markUploadCitiesCompleted(message || '{{ text_upload_cities_completed }}', false);
+		}
+
+		function finishUploadCitiesWithBackground(json) {
+			var total = json && json.total ? parseInt(json.total, 10) : 0;
+			var processed = json && json.processed ? parseInt(json.processed, 10) : 0;
+			var noLocalRows = total === 0;
+
+			if (noLocalRows) {
+				updateUploadCitiesProgress(0, 0);
+				setUploadCitiesProgressPercent(100);
+				markUploadCitiesCompleted('{{ text_upload_cities_no_rows_short }}', false, {
+					disableStart: true,
+					closePrimary: true,
+					emphasizeStatus: true,
+					backgroundMessage: '{{ text_upload_cities_background_started }}',
+					emphasizeBackground: true
+				});
+				return;
+			}
+
+			updateUploadCitiesProgress(processed, total);
+			markUploadCitiesCompleted('{{ text_upload_cities_local_loaded }}', false, {
+				disableStart: true,
+				closePrimary: true,
+				emphasizeStatus: true,
+				backgroundMessage: '{{ text_upload_cities_background_started }}',
+				emphasizeBackground: true
+			});
+		}
+
+		function parseUploadCitiesResponse(raw) {
+			if (raw && typeof raw === 'object') {
+				return raw;
+			}
+
+			if (typeof raw !== 'string' || raw === '') {
+				return null;
+			}
+
+			try {
+				return JSON.parse(raw);
+			} catch (e) {
+				var start = raw.indexOf('{');
+				var end = raw.lastIndexOf('}');
+
+				if (start !== -1 && end !== -1 && end > start) {
+					try {
+						return JSON.parse(raw.substring(start, end + 1));
+					} catch (e2) {
+						return null;
+					}
+				}
+
+				return null;
+			}
+		}
+
+		function isUploadCitiesSessionExpiredResponse(raw) {
+			if (typeof raw !== 'string' || raw === '') {
+				return false;
+			}
+
+			var body = raw.toLowerCase();
+
+			return body.indexOf('route=common/login') !== -1
+				|| body.indexOf('common/login') !== -1
+				|| body.indexOf('id="form-login"') !== -1
+				|| body.indexOf('name="username"') !== -1
+				|| body.indexOf('name="password"') !== -1;
+		}
+
+		function resolveUploadCitiesError(raw, fallbackMessage) {
+			if (isUploadCitiesSessionExpiredResponse(raw)) {
+				return '{{ text_upload_cities_session_expired }}';
+			}
+
+			return fallbackMessage;
+		}
+
+		function processUploadCitiesBatch(offset) {
+			if (uploadCitiesCancelled) {
+				return;
+			}
+
+			uploadCitiesRequest = $.ajax({
+				url: uploadCitiesBatchUrl,
+				type: 'post',
+				data: {
+					offset: offset,
+					limit: uploadCitiesBatchLimit,
+					country_codes: uploadCitiesSelectedCountries,
+					use_api_refresh: uploadCitiesUseApiRefresh ? 1 : 0
+				}
+			}).done(function (rawResponse) {
+				uploadCitiesRequest = null;
+				var json = parseUploadCitiesResponse(rawResponse);
+
+				if (uploadCitiesCancelled) {
+					return;
+				}
+
+				if (!json || !json.success) {
+					setUploadCitiesError((json && json.error) ? json.error : resolveUploadCitiesError(rawResponse, '{{ text_upload_cities_batch_failed }}'));
+					return;
+				}
+
+				updateUploadCitiesProgress(json.processed || 0, json.total || 0);
+				$('#upload-cities-status').text(json.message || '{{ text_upload_cities_uploading }}');
+
+				if (json.done) {
+					if (uploadCitiesUseApiRefresh) {
+						finishUploadCitiesWithBackground(json);
+					} else {
+						finishUploadCities(json.message || '{{ text_upload_cities_completed }}');
+					}
+					return;
+				}
+
+				processUploadCitiesBatch(json.next_offset || 0);
+			}).fail(function (jqXHR, textStatus) {
+				uploadCitiesRequest = null;
+
+				if (uploadCitiesCancelled || textStatus === 'abort') {
+					return;
+				}
+
+				setUploadCitiesError(resolveUploadCitiesError(jqXHR && jqXHR.responseText ? jqXHR.responseText : '', '{{ text_upload_cities_file_unavailable }} (' + textStatus + ')'));
+			});
+		}
+
+		function startUploadCitiesImport() {
+			if (uploadCitiesInProgress) {
+				return;
+			}
+
+			var selectedCountries = getSelectedUploadCountries();
+
+			if (!selectedCountries.length) {
+				setUploadCitiesValidationError('{{ text_upload_cities_country_required }}');
+				return;
+			}
+
+			resetUploadCitiesModal();
+			uploadCitiesSelectedCountries = selectedCountries;
+			uploadCitiesUseApiRefresh = $('#upload-cities-use-api').is(':checked');
+			uploadCitiesInProgress = true;
+			uploadCitiesCancelled = false;
+			$('#upload-cities-start').prop('disabled', true);
+			$('#upload-cities-progress').addClass('active');
+			$('#upload-cities-status').text('{{ text_upload_cities_reading_file }}').removeClass('upload-cities-status-strong upload-cities-status-bold');
+			setUploadCitiesBackgroundStatus('');
+			setUploadCitiesProgressVisible(true);
+
+			uploadCitiesRequest = $.ajax({
+				url: uploadCitiesInitUrl,
+				type: 'post',
+				data: {
+					country_codes: uploadCitiesSelectedCountries,
+					use_api_refresh: uploadCitiesUseApiRefresh ? 1 : 0
+				}
+			}).done(function (rawResponse) {
+				uploadCitiesRequest = null;
+				var json = parseUploadCitiesResponse(rawResponse);
+
+				if (uploadCitiesCancelled) {
+					return;
+				}
+
+				if (!json || !json.success) {
+					setUploadCitiesError((json && json.error) ? json.error : resolveUploadCitiesError(rawResponse, '{{ text_upload_cities_init_failed }}'));
+					return;
+				}
+
+				updateUploadCitiesProgress(json.processed || 0, json.total || 0);
+				$('#upload-cities-status').text(json.message || '{{ text_upload_cities_uploading }}');
+
+				if (json.done) {
+					if (uploadCitiesUseApiRefresh) {
+						finishUploadCitiesWithBackground(json);
+					} else {
+						finishUploadCities(json.message || '{{ text_upload_cities_completed }}');
+					}
+					return;
+				}
+
+				processUploadCitiesBatch(json.next_offset || 0);
+			}).fail(function (jqXHR, textStatus) {
+				uploadCitiesRequest = null;
+
+				if (uploadCitiesCancelled || textStatus === 'abort') {
+					return;
+				}
+
+				setUploadCitiesError(resolveUploadCitiesError(jqXHR && jqXHR.responseText ? jqXHR.responseText : '', '{{ text_upload_cities_file_unavailable }} (' + textStatus + ')'));
+			});
+		}
+
+		$('#upload-cities-start').on('click', function () {
+			startUploadCitiesImport();
+		});
+
+		$('#uploadCitiesModal').on('shown.bs.modal', function () {
+			resetUploadCitiesModal();
+		});
+
+		$('#uploadCitiesModal').on('hidden.bs.modal', function () {
+			uploadCitiesCancelled = true;
+			clearUploadCitiesRequest();
+
+			if (!uploadCitiesFinished) {
+				resetUploadCitiesModal();
+			}
+		});
     });
 </script>
 {{ footer }}

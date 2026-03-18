@@ -1631,6 +1631,204 @@ $('.datetime').datetimepicker();
         });
     }
 
+    function applyZoneSelection($scope, zoneId, attempts) {
+        attempts = typeof attempts === 'number' ? attempts : 10;
+
+        if (!zoneId || attempts <= 0) {
+            return;
+        }
+
+        var $zoneSelect = $scope.find('select[name="zone_id"]');
+
+        if (!$zoneSelect.length) {
+            return;
+        }
+
+        var zoneValue = String(zoneId);
+
+        if ($zoneSelect.find('option[value="' + zoneValue + '"]').length) {
+            if ($zoneSelect.val() !== zoneValue) {
+                $zoneSelect.val(zoneValue).trigger('change');
+            }
+
+            return;
+        }
+
+        setTimeout(function() {
+            applyZoneSelection($scope, zoneId, attempts - 1);
+        }, 120);
+    }
+
+    function clearCitySelection($scope) {
+        var $cityInput = $scope.find('input[name="city"]').first();
+
+        if (!$cityInput.length) {
+            return;
+        }
+
+        $cityInput.val('');
+        $cityInput.data('xdLastValidCity', '');
+        $cityInput.data('xdCitySelectionConfirmed', false);
+        $cityInput.trigger('change');
+    }
+
+    function setValidCitySelection($scope, item) {
+        var $cityInput = $scope.find('input[name="city"]').first();
+
+        if (!$cityInput.length) {
+            return;
+        }
+
+        var selectedCity = item && item.city_name ? String(item.city_name) : '';
+
+        $cityInput.val(selectedCity);
+        $cityInput.data('xdLastValidCity', selectedCity);
+        $cityInput.data('xdCitySelectionConfirmed', selectedCity !== '');
+        $cityInput.trigger('change');
+    }
+
+    function loadDefaultCityForScope($scope, countryId, zoneId) {
+        countryId = parseInt(countryId, 10) || 0;
+        zoneId = parseInt(zoneId, 10) || 0;
+
+        if (!$scope || !$scope.length || !countryId || !zoneId) {
+            clearCitySelection($scope);
+            return;
+        }
+
+        $.ajax({
+            url: 'index.php?route=extension/xd_checkout/checkout/cityDefault',
+            type: 'get',
+            dataType: 'json',
+            cache: false,
+            data: {
+                country_id: countryId,
+                zone_id: zoneId
+            },
+            success: function(json) {
+                if (json && json.city_name) {
+                    setValidCitySelection($scope, json);
+                } else {
+                    clearCitySelection($scope);
+                }
+            },
+            error: function() {
+                clearCitySelection($scope);
+            }
+        });
+    }
+
+    function initCityAutocompleteForScope(scopeSelector) {
+        var $scope = $(scopeSelector);
+
+        if (!$scope.length) {
+            return;
+        }
+
+        var $cityInput = $scope.find('input[name="city"]').first();
+
+        if (!$cityInput.length || $cityInput.data('xdCityAutocompleteReady')) {
+            return;
+        }
+
+        $cityInput.data('xdCityAutocompleteReady', true);
+        $cityInput.data('xdLastValidCity', String($cityInput.val() || '').trim());
+        $cityInput.data('xdCitySelectionConfirmed', String($cityInput.val() || '').trim() !== '');
+
+        $cityInput.on('input', function() {
+            $(this).data('xdCitySelectionConfirmed', false);
+        });
+
+        $cityInput.on('blur', function() {
+            var $input = $(this);
+
+            if ($input.data('xdCitySelectionConfirmed')) {
+                return;
+            }
+
+            var fallbackCity = String($input.data('xdLastValidCity') || '');
+
+            if ($input.val() !== fallbackCity) {
+                $input.val(fallbackCity);
+                $input.trigger('change');
+            }
+        });
+
+        $cityInput.autocomplete({
+            source: function(term, response) {
+                var requestTerm = String(term || '').trim();
+
+                if (requestTerm.length < 2) {
+                    response([]);
+                    return;
+                }
+
+                var $countrySelect = $scope.find('select[name="country_id"]');
+                var $zoneSelect = $scope.find('select[name="zone_id"]');
+                var countryId = $countrySelect.length ? parseInt($countrySelect.val(), 10) || 0 : 0;
+                var zoneId = $zoneSelect.length ? parseInt($zoneSelect.val(), 10) || 0 : 0;
+
+                $.ajax({
+                    url: 'index.php?route=extension/xd_checkout/checkout/cityAutocomplete',
+                    type: 'get',
+                    dataType: 'json',
+                    cache: false,
+                    data: {
+                        term: requestTerm,
+                        country_id: countryId,
+                        zone_id: zoneId,
+                        limit: 12
+                    },
+                    success: function(json) {
+                        response($.isArray(json) ? json : []);
+                    },
+                    error: function() {
+                        response([]);
+                    }
+                });
+            },
+            select: function(item) {
+                if (!item) {
+                    return;
+                }
+
+                setValidCitySelection($scope, item);
+
+                var $countrySelect = $scope.find('select[name="country_id"]');
+                var selectedCountryId = $countrySelect.length ? parseInt($countrySelect.val(), 10) || 0 : 0;
+                var targetCountryId = item.country_id ? parseInt(item.country_id, 10) || 0 : 0;
+
+                if ($countrySelect.length && targetCountryId > 0 && targetCountryId !== selectedCountryId) {
+                    $countrySelect.val(String(targetCountryId)).trigger('change');
+                }
+
+                if (item.zone_id) {
+                    applyZoneSelection($scope, parseInt(item.zone_id, 10) || 0, 10);
+                }
+            }
+        });
+    }
+
+    function initCityAutocomplete() {
+        if (typeof $.fn.autocomplete !== 'function') {
+            return;
+        }
+
+        initCityAutocompleteForScope('#payment-address');
+        initCityAutocompleteForScope('#shipping-address');
+
+        $(document).on('focus', '#payment-address input[name="city"], #shipping-address input[name="city"]', function() {
+            if ($(this).closest('#payment-address').length) {
+                initCityAutocompleteForScope('#payment-address');
+                return;
+            }
+
+            if ($(this).closest('#shipping-address').length) {
+                initCityAutocompleteForScope('#shipping-address');
+            }
+        });
+    }
+
     // --- Country/Zone select ---
     function initCountryZone() {
         var countrySelect = document.querySelector('#payment-address select[name="country_id"]');
@@ -1651,20 +1849,29 @@ $('.datetime').datetimepicker();
                 }
 
                 zoneSelect.innerHTML = '';
+                var firstZoneId = json.zone_first ? String(json.zone_first) : '';
+
                 if (json.zone && json.zone.length > 0) {
                     json.zone.forEach(function(z) {
                         var opt = document.createElement('option');
                         opt.value = z.zone_id;
                         opt.textContent = z.name;
-                        if (z.zone_id == json.zone_default) opt.selected = true;
+                        if (firstZoneId !== '' && String(z.zone_id) === firstZoneId) {
+                            opt.selected = true;
+                        }
                         zoneSelect.appendChild(opt);
                     });
+
+                    if (!firstZoneId && zoneSelect.options.length > 0) {
+                        zoneSelect.options[0].selected = true;
+                    }
                 } else {
                     var opt = document.createElement('option');
                     opt.value = 0;
                     opt.selected = true;
                     opt.textContent = '{{ text_none }}';
                     zoneSelect.appendChild(opt);
+                    clearCitySelection($('#payment-address'));
                 }
 
                 zoneSelect.dispatchEvent(new Event('change'));
@@ -1674,6 +1881,7 @@ $('.datetime').datetimepicker();
         countrySelect.dispatchEvent(new Event('change'));
 
         zoneSelect.addEventListener('change', function() {
+            loadDefaultCityForScope($('#payment-address'), countrySelect.value, zoneSelect.value);
             reloadPaymentMethod();
             {% if shipping_required %}
                 if (document.querySelector('#payment-address input[name="shipping_address"]:checked')) {
@@ -1748,6 +1956,7 @@ $('.datetime').datetimepicker();
         initCustomerGroup();
         initCustomFileUpload();
         initCountryZone();
+        initCityAutocomplete();
         initCreateAccountToggle();
     });
 </script>

@@ -31,6 +31,14 @@
 !/admin/language/ru-ru/extension/module/
 !/admin/language/ru-ru/extension/module/xd_checkout.php
 
+/admin/model/*
+!/admin/model/
+/admin/model/extension/*
+!/admin/model/extension/
+/admin/model/extension/module/*
+!/admin/model/extension/module/
+!/admin/model/extension/module/xd_checkout.php
+
 /admin/view/*
 !/admin/view/
 
@@ -72,6 +80,12 @@
 /catalog/language/ru-ru/extension/*
 !/catalog/language/ru-ru/extension/
 !/catalog/language/ru-ru/extension/xd_checkout/
+
+/catalog/model/*
+!/catalog/model/
+/catalog/model/extension/*
+!/catalog/model/extension/
+!/catalog/model/extension/xd_checkout/
 
 /catalog/view/*
 !/catalog/view/

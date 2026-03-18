@@ -247,6 +247,18 @@ class ControllerExtensionXdCheckoutPaymentAddress extends Controller
                     }
                 }
 
+                if (!isset($json['error']['city']) && !empty($this->request->post['city'])) {
+                    $this->load->model('extension/xd_checkout/city');
+
+                    if (!$this->model_extension_xd_checkout_city->isValidCity(
+                        $this->request->post['city'],
+                        isset($this->request->post['country_id']) ? (int)$this->request->post['country_id'] : 0,
+                        isset($this->request->post['zone_id']) ? (int)$this->request->post['zone_id'] : 0
+                    )) {
+                        $json['error']['city'] = $this->language->get('error_city');
+                    }
+                }
+
                 // Custom field validation
                 $this->load->model('account/custom_field');
 
