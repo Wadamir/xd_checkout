@@ -1,5 +1,5 @@
 {% macro renderField(field, label, name, value, type, options, is_required) %}
-    <div class="w-100 form-group{{ is_required ? ' required' }}" data-value="{{value}}">
+    <div id="{{ name }}-field" class="w-100 form-group{{ is_required ? ' required' }}" data-value="{{value}}">
         <label for="{{ name }}" class="control-label">{{ label }}</label>
         {% if type == 'select' %}
             <select name="{{ name }}" id="{{ name }}" class="form-control" {{ is_required ? 'required' }}>
