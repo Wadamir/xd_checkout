@@ -32,6 +32,9 @@
 
     {% for key, f in fields_address %}
         {% set is_required = f.required ?? false %}
+        {% set input_name = key|replace({'field_': ''}) %}
+        {% set input_value = attribute(_context, input_name) %}     
+
         {% if f.display %}
             {% if attribute(address_selects, key) is defined %}
                 {% set input_value = key == 'field_country' ? country_id : key == 'field_zone' ? zone_id : '' %}
@@ -45,9 +48,14 @@
                     is_required
                 ) }}
             {% else %}
-                {% set input_name = key|replace({'field_': ''}) %}
-                {% set input_value = attribute(_context, input_name) %}
-                {{ forms.renderField(key, attribute(_context, 'entry_' ~ input_name), input_name, input_value, 'text', '', is_required) }}
+                {{ forms.renderField(key, attribute(_context, 'entry_' ~ input_name), input_name, input_value, 'text', is_required) }}
+            {% endif %}
+        {% else %}
+            {% if attribute(address_selects, key) is defined %}
+                {% set input_value = key == 'field_country' ? country_id : key == 'field_zone' ? zone_id : '' %}
+                <input type="hidden" name="{{ attribute(address_selects[key], 'name') }}" value="{{ input_value }}" />
+            {% else %}
+                <input type="hidden" name="{{ input_name }}" value="{{ input_value }}" />
             {% endif %}
         {% endif %}
     {% endfor %}

@@ -84,6 +84,20 @@ class ControllerExtensionXdCheckoutPaymentAddress extends Controller
             $data['zone_id'] = isset($zone['default']) ? $zone['default'] : 0;
         }
 
+        $normalized_zone_id = $this->normalizeZoneForCountry($data['country_id'], $data['zone_id']);
+
+        if ((int)$normalized_zone_id !== (int)$data['zone_id']) {
+            $data['zone_id'] = $normalized_zone_id;
+            $this->session->data['payment_address']['zone_id'] = $normalized_zone_id;
+        }
+
+        $normalized_city = $this->normalizeCityForRegion($data['city'], $data['country_id'], $data['zone_id']);
+
+        if ($normalized_city !== $data['city']) {
+            $data['city'] = $normalized_city;
+            $this->session->data['payment_address']['city'] = $normalized_city;
+        }
+
         $this->load->model('localisation/country');
 
         $data['countries'] = $this->model_localisation_country->getCountries();
@@ -171,6 +185,15 @@ class ControllerExtensionXdCheckoutPaymentAddress extends Controller
             }
 
             if ($this->request->post['payment_address'] == 'new') {
+                $post_country_id = isset($this->request->post['country_id']) ? (int)$this->request->post['country_id'] : 0;
+                $post_zone_id = isset($this->request->post['zone_id']) ? (int)$this->request->post['zone_id'] : 0;
+                $post_city = isset($this->request->post['city']) ? $this->request->post['city'] : '';
+
+                $post_zone_id = $this->normalizeZoneForCountry($post_country_id, $post_zone_id);
+                $this->request->post['zone_id'] = $post_zone_id;
+
+                $this->request->post['city'] = $this->normalizeCityForRegion($post_city, $post_country_id, $post_zone_id);
+
                 // $firstname = $xd_checkout_settings['field_firstname'];
 
                 // if (!empty($firstname['required'])) {
@@ -308,5 +331,51 @@ class ControllerExtensionXdCheckoutPaymentAddress extends Controller
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+
+    protected function normalizeCityForRegion($city_name, $country_id = 0, $zone_id = 0)
+    {
+        $city_name = trim((string)$city_name);
+        $country_id = (int)$country_id;
+        $zone_id = (int)$zone_id;
+
+        $this->load->model('extension/xd_checkout/city');
+
+        if ($city_name !== '' && $this->model_extension_xd_checkout_city->isValidCity($city_name, $country_id, $zone_id)) {
+            return $city_name;
+        }
+
+        $fallback = $this->model_extension_xd_checkout_city->getFirstCity($country_id, $zone_id);
+
+        if (!empty($fallback['city_name'])) {
+            return trim((string)$fallback['city_name']);
+        }
+
+        return $city_name;
+    }
+
+    protected function normalizeZoneForCountry($country_id = 0, $zone_id = 0)
+    {
+        $country_id = (int)$country_id;
+        $zone_id = (int)$zone_id;
+
+        if ($country_id <= 0) {
+            return $zone_id;
+        }
+
+        $this->load->model('localisation/zone');
+        $zones = $this->model_localisation_zone->getZonesByCountryId($country_id);
+
+        if (!$zones) {
+            return 0;
+        }
+
+        foreach ($zones as $zone) {
+            if ((int)$zone['zone_id'] === $zone_id) {
+                return $zone_id;
+            }
+        }
+
+        return (int)$zones[0]['zone_id'];
     }
 }

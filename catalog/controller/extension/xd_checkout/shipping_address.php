@@ -17,6 +17,8 @@ class ControllerExtensionXdCheckoutShippingAddress extends Controller
         $data = $this->load->language('checkout/checkout');
         $data = array_merge($data, $this->load->language('extension/xd_checkout/checkout'));
 
+        $this->syncShippingAddressWithPayment();
+
         $xd_checkout_settings = $this->xd_checkout_settings;
 
         if (isset($this->session->data['shipping_address']['address_id'])) {
@@ -112,155 +114,24 @@ class ControllerExtensionXdCheckoutShippingAddress extends Controller
     {
         $this->load->language('checkout/checkout');
         $this->load->language('extension/xd_checkout/checkout');
-
-        $xd_checkout_settings = $this->xd_checkout_settings;
-
         $json = array();
 
-        // Validate if customer is logged in.
-        if (!$this->customer->isLogged()) {
-            $json['redirect'] = $this->url->link('checkout/xd_checkout/checkout', '', true);
-        }
-
-        // Validate if shipping is required. If not the customer should not have reached this page.
-        if (!$this->cart->hasShipping()) {
-            $json['redirect'] = $this->url->link('checkout/xd_checkout/checkout', '', true);
-        }
-
-        if (!$json) {
-            if (isset($this->request->post['shipping_address']) && $this->request->post['shipping_address'] == 'existing') {
-                $this->load->model('account/address');
-
-                if (empty($this->request->post['address_id'])) {
-                    $json['error']['warning'] = $this->language->get('error_address');
-                } elseif (!$this->model_account_address->getAddress($this->request->post['address_id'])) {
-                    $json['error']['warning'] = $this->language->get('error_address');
-                }
-
-                if (!$json) {
-                    $this->session->data['shipping_address'] = $this->model_account_address->getAddress($this->request->post['address_id']);
-                }
-            }
-
-            if ($this->request->post['shipping_address'] == 'new') {
-                $firstname = $xd_checkout_settings['field_firstname'];
-
-                if (!empty($firstname['required'])) {
-                    if ((utf8_strlen($this->request->post['firstname']) < 1) || (utf8_strlen($this->request->post['firstname']) > 32)) {
-                        $json['error']['firstname'] = $this->language->get('error_firstname');
-                    }
-                }
-
-                $lastname = $xd_checkout_settings['field_lastname'];
-
-                if (!empty($lastname['required'])) {
-                    if ((utf8_strlen($this->request->post['lastname']) < 1) || (utf8_strlen($this->request->post['lastname']) > 32)) {
-                        $json['error']['lastname'] = $this->language->get('error_lastname');
-                    }
-                }
-
-                $address_1 = $xd_checkout_settings['field_address_1'];
-
-                if (!empty($address_1['required'])) {
-                    if ((utf8_strlen($this->request->post['address_1']) < 3) || (utf8_strlen($this->request->post['address_1']) > 64)) {
-                        $json['error']['address_1'] = $this->language->get('error_address_1');
-                    }
-                }
-
-                $address_2 = $xd_checkout_settings['field_address_2'];
-
-                if (!empty($address_2['required'])) {
-                    if ((utf8_strlen($this->request->post['address_2']) < 3) || (utf8_strlen($this->request->post['address_2']) > 64)) {
-                        $json['error']['address_2'] = $this->language->get('error_address_2');
-                    }
-                }
-
-                $company = $xd_checkout_settings['field_company'];
-
-                if (!empty($company['required'])) {
-                    if ((utf8_strlen($this->request->post['company']) < 3) || (utf8_strlen($this->request->post['company']) > 64)) {
-                        $json['error']['company'] = $this->language->get('error_company');
-                    }
-                }
-
-                $city = $xd_checkout_settings['field_city'];
-
-                if (!empty($city['required'])) {
-                    if ((utf8_strlen($this->request->post['city']) < 2) || (utf8_strlen($this->request->post['city']) > 128)) {
-                        $json['error']['city'] = $this->language->get('error_city');
-                    }
-                }
-
-                $this->load->model('localisation/country');
-
-                $country_info = $this->model_localisation_country->getCountry($this->request->post['country_id']);
-
-                if ($country_info && $country_info['postcode_required'] && (utf8_strlen($this->request->post['postcode']) < 2) || (utf8_strlen($this->request->post['postcode']) > 10)) {
-                    $json['error']['postcode'] = $this->language->get('error_postcode');
-                }
-
-                $country = $xd_checkout_settings['field_country'];
-
-                if (!empty($country['required'])) {
-                    if ($this->request->post['country_id'] == '') {
-                        $json['error']['country'] = $this->language->get('error_country');
-                    }
-                }
-
-                $zone = $xd_checkout_settings['field_zone'];
-
-                if (!empty($zone['required'])) {
-                    if ($this->request->post['zone_id'] == '') {
-                        $json['error']['zone'] = $this->language->get('error_zone');
-                    }
-                }
-
-                if (!isset($json['error']['city']) && !empty($this->request->post['city'])) {
-                    $this->load->model('extension/xd_checkout/city');
-
-                    if (!$this->model_extension_xd_checkout_city->isValidCity(
-                        $this->request->post['city'],
-                        isset($this->request->post['country_id']) ? (int)$this->request->post['country_id'] : 0,
-                        isset($this->request->post['zone_id']) ? (int)$this->request->post['zone_id'] : 0
-                    )) {
-                        $json['error']['city'] = $this->language->get('error_city');
-                    }
-                }
-
-                // Custom field validation
-                $this->load->model('account/custom_field');
-
-                $custom_fields = $this->model_account_custom_field->getCustomFields($this->config->get('config_customer_group_id'));
-
-                foreach ($custom_fields as $custom_field) {
-                    if ($custom_field['location'] == 'address' && $custom_field['required'] && empty($this->request->post['custom_field'][$custom_field['location']][$custom_field['custom_field_id']])) {
-                        $json['error']['custom_field' . $custom_field['custom_field_id']] = sprintf($this->language->get('error_custom_field'), $custom_field['name']);
-                    }
-                }
-
-                if (!$json) {
-                    // Default Shipping Address
-                    $this->load->model('account/address');
-
-                    $address_id = $this->model_account_address->addAddress($this->customer->getId(), $this->request->post);
-
-                    $this->session->data['shipping_address'] = $this->model_account_address->getAddress($address_id);
-
-                    if ($this->config->get('config_customer_activity')) {
-                        $this->load->model('account/activity');
-
-                        $activity_data = array(
-                            'customer_id' => $this->customer->getId(),
-                            'name'        => $this->customer->getfirstname() . ' ' . $this->customer->getlastname()
-                        );
-
-                        $this->model_account_activity->addActivity('address_add', $activity_data);
-                    }
-                }
-            }
+        if (empty($this->session->data['payment_address'])) {
+            $json['error']['warning'] = $this->language->get('error_address');
+        } else {
+            $this->syncShippingAddressWithPayment();
         }
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+
+    protected function syncShippingAddressWithPayment()
+    {
+        if (empty($this->session->data['payment_address']) || !is_array($this->session->data['payment_address'])) {
+            return;
+        }
+
+        $this->session->data['shipping_address'] = $this->session->data['payment_address'];
     }
 }

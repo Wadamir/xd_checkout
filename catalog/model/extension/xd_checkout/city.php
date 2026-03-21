@@ -22,7 +22,7 @@ class ModelExtensionXdCheckoutCity extends Model
 
         $term_escaped = $this->db->escape($term);
         $where = array();
-        $where[] = "(`city_name` LIKE '" . $term_escaped . "%' OR `city_name` LIKE '%" . $term_escaped . "%' OR `name` LIKE '%" . $term_escaped . "%')";
+        $where[] = "(`city_name` LIKE '" . $term_escaped . "%' OR `city_name` LIKE '%" . $term_escaped . "%')";
 
         if ($country_id > 0) {
             $where[] = "`country_id` = '" . $country_id . "'";

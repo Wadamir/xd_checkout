@@ -813,6 +813,40 @@ function validatePaymentMethod() {
 
 // Shipping Method
 {% if shipping_required %} 
+    function selectFirstShippingMethod() {
+        var $shippingMethodContainer = $('#shipping-method');
+        var $radioMethods = $shippingMethodContainer.find('input[name="shipping_method"]');
+
+        if ($radioMethods.length) {
+            var $firstRadio = $radioMethods.first();
+
+            if (!$firstRadio.prop('checked')) {
+                $radioMethods.prop('checked', false);
+                $firstRadio.prop('checked', true).trigger('change');
+            }
+
+            return;
+        }
+
+        var $selectMethod = $shippingMethodContainer.find('select[name="shipping_method"]');
+
+        if ($selectMethod.length && $selectMethod.find('option').length) {
+            var firstValue = $selectMethod.find('option').first().val();
+
+            if ($selectMethod.val() !== firstValue) {
+                $selectMethod.val(firstValue).trigger('change');
+            }
+        }
+    }
+
+    function refreshAddressShippingMethodBlockHeight() {
+        var block = document.getElementById('address_shipping-method');
+
+        if (block && block.classList.contains('active')) {
+            block.style.maxHeight = 'none';
+        }
+    }
+
 	function reloadShippingMethod(type) {
 		if (type == 'payment') {
 			var post_data = $('#payment-address input[type=\'text\'], #payment-address input[type=\'checkbox\']:checked, #payment-address input[type=\'radio\']:checked, #payment-address input[type=\'hidden\'], #payment-address select, #payment-address textarea, #shipping-method input[type=\'text\'], #shipping-method input[type=\'checkbox\']:checked, #shipping-method input[type=\'radio\']:checked, #shipping-method input[type=\'hidden\'], #shipping-method select, #shipping-method textarea');
@@ -833,6 +867,9 @@ function validatePaymentMethod() {
 				moduleLoaded($('#shipping-method'), {{ loading_display }} );
 				
 				$('#shipping-method .xd_checkout-content').html(html);
+                selectFirstShippingMethod();
+                refreshAddressShippingMethodBlockHeight();
+                checkAddress();
 			},
 			{% if debug %} 
 			error: function(xhr, ajaxOptions, thrownError) {
@@ -856,6 +893,9 @@ function validatePaymentMethod() {
 				moduleLoaded($('#shipping-method'), {{ loading_display }} );
 				
 				$('#shipping-method .xd_checkout-content').html(html);
+                selectFirstShippingMethod();
+                refreshAddressShippingMethodBlockHeight();
+                checkAddress();
 			},
 			{% if debug %} 
 			error: function(xhr, ajaxOptions, thrownError) {
@@ -1474,7 +1514,7 @@ $('.datetime').datetimepicker();
                         // curSection.classList.toggle('inactive');
 
                         toShowSection.classList.toggle('active');
-                        toShowSection.style.maxHeight = toShowSection.scrollHeight + "px";
+                        toShowSection.style.maxHeight = "none";
                         toShowSection.style.opacity = "1";
                         // toShowSection.classList.toggle('inactive');
                         if (curSection.id === 'guest' ) {
@@ -1491,7 +1531,7 @@ $('.datetime').datetimepicker();
                 // curSection.classList.toggle('inactive');
 
                 toShowSection.classList.toggle('active');
-                toShowSection.style.maxHeight = toShowSection.scrollHeight + "px";
+                toShowSection.style.maxHeight = "none";
                 toShowSection.style.opacity = "1";
                 // toShowSection.classList.toggle('inactive');
                 console.log('toggleAccordion (no validation) - loadCart', step);
@@ -1831,15 +1871,21 @@ $('.datetime').datetimepicker();
 
     // --- Country/Zone select ---
     function initCountryZone() {
-        var countrySelect = document.querySelector('#payment-address select[name="country_id"]');
+        var countrySelect = document.querySelector('#payment-address select[name="country_id"], #payment-address input[name="country_id"]');
         var zoneSelect = document.querySelector('#payment-address select[name="zone_id"]');
-        if (!countrySelect || !zoneSelect) return;
+        if (!zoneSelect) return;
 
-        countrySelect.addEventListener('change', function() {
-            var url = 'index.php?route=extension/xd_checkout/checkout/country&country_id=' + this.value;
+        function getCountryValue() {
+            return countrySelect ? countrySelect.value : '0';
+        }
+
+        function updateZonesByCountry(countryId) {
+            var url = 'index.php?route=extension/xd_checkout/checkout/country&country_id=' + countryId;
             var spinner = document.createElement('i');
             spinner.className = 'fa fa-spinner fa-spin';
-            this.parentNode.appendChild(spinner);
+            if (countrySelect && countrySelect.parentNode) {
+                countrySelect.parentNode.appendChild(spinner);
+            }
 
             ajaxGet(url, function(json) {
                 var postcodeEl = document.getElementById('payment-postcode-required');
@@ -1877,18 +1923,29 @@ $('.datetime').datetimepicker();
                 zoneSelect.dispatchEvent(new Event('change'));
                 spinner.remove();
             });
-        });
-        countrySelect.dispatchEvent(new Event('change'));
+        }
 
-        zoneSelect.addEventListener('change', function() {
-            loadDefaultCityForScope($('#payment-address'), countrySelect.value, zoneSelect.value);
+        function onZoneChange() {
+            loadDefaultCityForScope($('#payment-address'), getCountryValue(), zoneSelect.value);
             reloadPaymentMethod();
             {% if shipping_required %}
                 if (document.querySelector('#payment-address input[name="shipping_address"]:checked')) {
                     reloadShippingMethod('payment');
                 }
             {% endif %}
-        });
+        }
+
+        zoneSelect.addEventListener('change', onZoneChange);
+
+        if (countrySelect && countrySelect.tagName === 'SELECT') {
+            countrySelect.addEventListener('change', function() {
+                updateZonesByCountry(this.value);
+            });
+
+            countrySelect.dispatchEvent(new Event('change'));
+        } else {
+            onZoneChange();
+        }
     }
 
     // --- Create account toggle ---
@@ -1923,7 +1980,7 @@ $('.datetime').datetimepicker();
     const initAccordions = () => {
         document.querySelectorAll('.xd_checkout-block').forEach(function(block) {
             if (block.classList.contains('active')) {
-                block.style.maxHeight = block.scrollHeight + "px";
+                block.style.maxHeight = "none";
                 block.style.opacity = "1";
             } else {
                 block.style.maxHeight = "0";
